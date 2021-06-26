@@ -5,7 +5,25 @@
  *      Author: kwarc
  */
 
+#include <iostream>
+
+#include <hal/hal_system.hpp>
+#include <hal/hal_delay.hpp>
+#include <hal/hal_led.hpp>
+
+
 int main(void)
 {
-    while (true);
+    hal::system::init();
+
+    std::cout << "System started" << std::endl;
+
+    auto debug_led = new hal::leds::debug();
+    while (true)
+    {
+        debug_led->set(true);
+        hal::delay::delay_ms(500);
+        debug_led->set(false);
+        hal::delay::delay_ms(500);
+    }
 }
