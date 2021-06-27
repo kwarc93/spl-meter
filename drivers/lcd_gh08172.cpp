@@ -14,23 +14,9 @@
 
 using namespace drivers;
 
-#define LCD_GPIOA_PINS  (GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 |    \
-                         GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_15)
-
-#define LCD_GPIOB_PINS  (GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 |    \
-                         GPIO_PIN_5 | GPIO_PIN_9 | GPIO_PIN_12 |   \
-                         GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15)
-
-#define LCD_GPIOC_PINS  (GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |    \
-                         GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8)
-
-#define LCD_GPIOD_PINS  (GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 |   \
-                         GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | \
-                         GPIO_PIN_14 | GPIO_PIN_15)
-
 lcd_gh08172::lcd_gh08172()
 {
-    const std::array<const gpio::io, 29> pins =
+    constexpr std::array<const gpio::io, 29> lcd_pins =
     {{
         {gpio::port::porta, gpio::pin::pin6},
         {gpio::port::porta, gpio::pin::pin7},
@@ -66,7 +52,7 @@ lcd_gh08172::lcd_gh08172()
         {gpio::port::portd, gpio::pin::pin15},
     }};
 
-    for (const auto &pin : pins)
+    for (const auto &pin : lcd_pins)
         gpio::init(pin, gpio::af::af11);
 
     drivers::lcd::init();

@@ -10,6 +10,7 @@
 #include <cmsis/stm32l4xx.h>
 
 #include "rcc.hpp"
+#include "delay.hpp"
 
 using namespace drivers;
 
@@ -39,8 +40,11 @@ bool lcd::init(void)
     if (LCD->CR & LCD_CR_LCDEN)
         return false;
 
+    /* Wait for the external capacitor Cext */
+    delay::ms(2);
+
     /* Configure minimal features */
-    LCD->FCR = 0b1110 << LCD_FCR_DIV_Pos | 0b100 << LCD_FCR_CC_Pos | 0b100 << LCD_FCR_PON_Pos |
+    LCD->FCR = 0b1111 << LCD_FCR_DIV_Pos | 0b101 << LCD_FCR_CC_Pos | 0b100 << LCD_FCR_PON_Pos |
                0b010 << LCD_FCR_BLINKF_Pos;
 
     wait_for_synchro();
