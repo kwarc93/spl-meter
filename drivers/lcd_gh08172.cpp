@@ -53,7 +53,7 @@ lcd_gh08172::lcd_gh08172()
     }};
 
     for (const auto &pin : lcd_pins)
-        gpio::init(pin, gpio::af::af11);
+        gpio::init(pin, gpio::af::af11, gpio::mode::af);
 
     drivers::lcd::init();
 
