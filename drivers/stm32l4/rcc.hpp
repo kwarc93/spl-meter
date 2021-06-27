@@ -63,6 +63,14 @@ public:
         CLK_48MHZ,
     };
 
+    enum class rtc_clock_source
+    {
+        NONE = 0,
+        LSE,
+        LSI,
+        HSE,
+    };
+
     /** @brief RCC peripheral definition. Initialize this object with @ref RCC_PERIPH_BUS. */
     struct periph_bus
     {
@@ -113,6 +121,13 @@ public:
      *  @retval None
      */
     static void toggle_lsi(bool state);
+
+    /**
+     * @brief   Selects RTC clock source.
+     * @param   source - @ref enum class rtc_clock_source
+     * @waring  This function resets Backup Domain!
+     */
+    static void set_rtc_clock(rtc_clock_source source);
 
     /**
      * @brief   Gets reset source flags.

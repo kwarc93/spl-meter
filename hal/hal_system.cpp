@@ -24,14 +24,14 @@ void system::init(void)
     /* Number of group priorities: 16, subpriorities: 16. */
     NVIC_SetPriorityGrouping(0x07 - __NVIC_PRIO_BITS);
 
-    /* Set System Tick interrupt */
-    SysTick_Config(system::system_clock / system::systick_freq);
-
     drivers::core::enable_cycles_counter();
-
     drivers::flash::set_wait_states(system::system_clock);
 
     drivers::rcc::set_msi(drivers::rcc::msi_clock::CLK_48MHZ);
+    drivers::rcc::enable_periph_clock({drivers::rcc::bus::APB1, RCC_APB1ENR1_PWREN}, true);
+
+    /* Set System Tick interrupt */
+    SysTick_Config(system::system_clock / system::systick_freq);
 }
 
 //-----------------------------------------------------------------------------

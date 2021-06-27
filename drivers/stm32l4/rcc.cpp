@@ -175,6 +175,29 @@ void rcc::toggle_lse(bool state)
 
 //-----------------------------------------------------------------------------
 
+void rcc::set_rtc_clock(rtc_clock_source source)
+{
+    /* Enable access to backup domain. */
+    PWR->CR1 |= PWR_CR1_DBP;
+
+    /* Reset Backup Domain */
+    RCC->BDCR |= RCC_BDCR_BDRST;
+    RCC->BDCR &= ~RCC_BDCR_BDRST;
+
+    RCC->BDCR &= ~RCC_BDCR_RTCSEL_Msk;
+    RCC->BDCR |= static_cast<uint32_t>(source) << RCC_BDCR_RTCSEL_Pos;
+
+    if (source != rcc::rtc_clock_source::NONE)
+        RCC->BDCR |= RCC_BDCR_RTCEN;
+    else
+        RCC->BDCR &= ~RCC_BDCR_RTCEN;
+
+    /* Disable access to backup domain. */
+    PWR->CR1 &= ~PWR_CR1_DBP;
+}
+
+//-----------------------------------------------------------------------------
+
 rcc::reset_source rcc::get_reset_source(void)
 {
     return static_cast<rcc::reset_source>(RCC->CSR >> (RCC_CSR_RMVF_Pos + 1));
