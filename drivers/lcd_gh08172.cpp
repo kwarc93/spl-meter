@@ -59,7 +59,7 @@ lcd_gh08172::lcd_gh08172()
 
     /* Test all segments */
     for (uint8_t idx = 0; idx < 16; idx++)
-        *drivers::lcd::ram[idx] = 0xfffffffful;
+        drivers::lcd::ram[idx] = 0xfffffffful;
 
     drivers::lcd::update();
 }

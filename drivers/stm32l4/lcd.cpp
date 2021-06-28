@@ -14,6 +14,8 @@
 
 using namespace drivers;
 
+volatile uint32_t (&lcd::ram)[16] = LCD->RAM;
+
 //-----------------------------------------------------------------------------
 /* private */
 
@@ -58,8 +60,6 @@ bool lcd::init(void)
     while((LCD->SR & LCD_SR_ENS) == 0);
     /* Wait Until the LCD Booster is ready */
     while((LCD->SR & LCD_SR_RDY) == 0);
-
-    ram = &LCD->RAM;
 
     clear();
 

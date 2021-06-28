@@ -22,7 +22,7 @@ public:
     static void deinit(void);
     static void clear(void);
     static void update(void);
-    static inline volatile uint32_t (*ram)[16];
+    static volatile uint32_t (&ram)[16];
 
 private:
     static void wait_for_synchro(void);
