@@ -14,7 +14,7 @@
 
 using namespace drivers;
 
-volatile uint32_t (&lcd::ram)[16] = LCD->RAM;
+volatile uint64_t (&lcd::ram)[8] = reinterpret_cast<volatile uint64_t (&)[8]>(LCD->RAM);
 
 //-----------------------------------------------------------------------------
 /* private */

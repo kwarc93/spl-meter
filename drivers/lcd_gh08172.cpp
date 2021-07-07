@@ -7,59 +7,60 @@
 
 #include "lcd_gh08172.hpp"
 
-#include <drivers/stm32l4/gpio.hpp>
 #include <drivers/stm32l4/lcd.hpp>
+#include <drivers/stm32l4/delay.hpp>
+
+#include <hal/hal_lcd.hpp>
 
 #include <array>
 
 using namespace drivers;
 
+//-----------------------------------------------------------------------------
+/* private */
+
+void lcd_gh08172::set_character(uint16_t value, uint8_t position)
+{
+    if (position >= this->positions)
+        return;
+
+    const uint8_t bit_map[this->positions] = {0, 2, 4, 6, 8, 10};
+
+    for (auto &com : hal::lcd::com_map)
+    {
+        drivers::lcd::ram[com] |= ((uint64_t)!!(value & (1 << 12)) << hal::lcd::segment_map[bit_map[position]]) |
+                                  ((uint64_t)!!(value & (1 << 13)) << hal::lcd::segment_map[bit_map[position] + 1]) |
+                                  ((uint64_t)!!(value & (1 << 14)) << hal::lcd::segment_map[23 - bit_map[position] - 1]) |
+                                  ((uint64_t)!!(value & (1 << 15)) << hal::lcd::segment_map[23 - bit_map[position]]);
+        value <<= 4;
+    }
+}
+
+//-----------------------------------------------------------------------------
+/* public */
+
 lcd_gh08172::lcd_gh08172()
 {
-    constexpr std::array<const gpio::io, 29> lcd_pins =
-    {{
-        {gpio::port::porta, gpio::pin::pin6},
-        {gpio::port::porta, gpio::pin::pin7},
-        {gpio::port::porta, gpio::pin::pin8},
-        {gpio::port::porta, gpio::pin::pin9},
-        {gpio::port::porta, gpio::pin::pin10},
-        {gpio::port::porta, gpio::pin::pin15},
-
-        {gpio::port::portb, gpio::pin::pin0},
-        {gpio::port::portb, gpio::pin::pin1},
-        {gpio::port::portb, gpio::pin::pin4},
-        {gpio::port::portb, gpio::pin::pin5},
-        {gpio::port::portb, gpio::pin::pin9},
-        {gpio::port::portb, gpio::pin::pin12},
-        {gpio::port::portb, gpio::pin::pin13},
-        {gpio::port::portb, gpio::pin::pin14},
-        {gpio::port::portb, gpio::pin::pin15},
-
-        {gpio::port::portc, gpio::pin::pin3},
-        {gpio::port::portc, gpio::pin::pin4},
-        {gpio::port::portc, gpio::pin::pin5},
-        {gpio::port::portc, gpio::pin::pin6},
-        {gpio::port::portc, gpio::pin::pin7},
-        {gpio::port::portc, gpio::pin::pin8},
-
-        {gpio::port::portd, gpio::pin::pin8},
-        {gpio::port::portd, gpio::pin::pin9},
-        {gpio::port::portd, gpio::pin::pin10},
-        {gpio::port::portd, gpio::pin::pin11},
-        {gpio::port::portd, gpio::pin::pin12},
-        {gpio::port::portd, gpio::pin::pin13},
-        {gpio::port::portd, gpio::pin::pin14},
-        {gpio::port::portd, gpio::pin::pin15},
-    }};
-
-    for (const auto &pin : lcd_pins)
+    /* TODO: Move GPIO initialization to low level LCD driver? */
+    for (const auto &pin : hal::lcd::gpio)
         gpio::init(pin, gpio::af::af11, gpio::mode::af);
 
     drivers::lcd::init();
 
     /* Test all segments */
-    for (uint8_t idx = 0; idx < 16; idx++)
-        drivers::lcd::ram[idx] = 0xfffffffful;
+    for (uint8_t idx = 0; idx < 8; idx++)
+        drivers::lcd::ram[idx] = 0xffffffffffffffff;
+
+    drivers::lcd::update();
+    drivers::delay::ms(1000);
+    drivers::lcd::clear();
+
+    /* 'HELLO' */
+    this->set_character(0xFA00, 0);
+    this->set_character(0x9D00, 1);
+    this->set_character(0x1900, 2);
+    this->set_character(0x1900, 3);
+    this->set_character(0x5F00, 4);
 
     drivers::lcd::update();
 }

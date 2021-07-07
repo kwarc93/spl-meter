@@ -42,7 +42,7 @@ SEG(n)      { E , D , P ,   N   }
 SEG(n+1)    { M , C , COL , DP  }
 SEG(23-n-1) { B , A , K ,   J   }
 SEG(23-n)   { G , F , Q ,   H   }
-with n positive odd number.
+with n positive even number.
 
  The character 'A' for example is:
   -------------------------------
@@ -66,6 +66,13 @@ public:
     lcd_gh08172();
     ~lcd_gh08172();
     bool write(std::string &s);
+private:
+    const uint8_t segments = 16;
+    const uint8_t positions = 6;
+    const uint8_t bars = 4;
+
+    void set_character(uint16_t value, uint8_t position);
+
 };
 
 }
