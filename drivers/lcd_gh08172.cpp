@@ -24,14 +24,12 @@ void lcd_gh08172::set_character(uint16_t value, uint8_t position)
     if (position >= this->positions)
         return;
 
-    const uint8_t bit_map[this->positions] = {0, 2, 4, 6, 8, 10};
-
     for (auto &com : hal::lcd::com_map)
     {
-        drivers::lcd::ram[com] |= ((uint64_t)!!(value & (1 << 12)) << hal::lcd::segment_map[bit_map[position]]) |
-                                  ((uint64_t)!!(value & (1 << 13)) << hal::lcd::segment_map[bit_map[position] + 1]) |
-                                  ((uint64_t)!!(value & (1 << 14)) << hal::lcd::segment_map[23 - bit_map[position] - 1]) |
-                                  ((uint64_t)!!(value & (1 << 15)) << hal::lcd::segment_map[23 - bit_map[position]]);
+        drivers::lcd::ram[com] |= ((uint64_t)!!(value & (1 << 12)) << hal::lcd::segment_map[2 * position]) |
+                                  ((uint64_t)!!(value & (1 << 13)) << hal::lcd::segment_map[2 * position + 1]) |
+                                  ((uint64_t)!!(value & (1 << 14)) << hal::lcd::segment_map[23 - 2 * position - 1]) |
+                                  ((uint64_t)!!(value & (1 << 15)) << hal::lcd::segment_map[23 - 2 * position]);
         value <<= 4;
     }
 }
