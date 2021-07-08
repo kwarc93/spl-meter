@@ -21,6 +21,8 @@ int main(void)
     auto lcd = new drivers::lcd_gh08172();
     auto debug_led = new hal::leds::debug();
 
+    lcd->write("Hello");
+
     while (true)
     {
         debug_led->set(true);

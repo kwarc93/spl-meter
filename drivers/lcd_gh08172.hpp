@@ -9,6 +9,7 @@
 #define LCD_GH08172_HPP_
 
 #include <string>
+#include <map>
 
 /**
   @verbatim
@@ -53,6 +54,12 @@ MSB   { 1 , 1 , 0 , 0   }
       -------------------
   'A' =  F    E   0   0 hexa
 
+Bar segment mapping:
+ - Bar 0: COM3, LCD_SEG11
+ - Bar 1: COM2, LCD_SEG11
+ - Bar 2: COM3, LCD_SEG9
+ - Bar 3: COM2, LCD_SEG9
+
   @endverbatim
 */
 
@@ -65,13 +72,16 @@ public:
 
     lcd_gh08172();
     ~lcd_gh08172();
-    bool write(std::string &s);
+    bool write(const std::string &s);
 private:
     const uint8_t segments = 16;
     const uint8_t positions = 6;
     const uint8_t bars = 4;
 
+    static const std::map<const char, uint16_t> character_map;
+
     void set_character(uint16_t value, uint8_t position);
+    void set_bar(bool value, uint8_t bar);
 
 };
 
