@@ -22,6 +22,7 @@ using namespace drivers;
 
 const std::map<const char, uint16_t> lcd_gh08172::character_map =
 {
+    /* Capital letters */
     {'A', 0xFE00},
     {'B', 0x6714},
     {'C', 0x1D00},
@@ -49,6 +50,7 @@ const std::map<const char, uint16_t> lcd_gh08172::character_map =
     {'Y', 0x0058},
     {'Z', 0x05C0},
 
+    /* Digits */
     {'0', 0x5F00},
     {'1', 0x4200},
     {'2', 0xF500},
@@ -56,9 +58,28 @@ const std::map<const char, uint16_t> lcd_gh08172::character_map =
     {'4', 0xEA00},
     {'5', 0xAF00},
     {'6', 0xBF00},
-    {'7', 0x0460},
+    {'7', 0x4600},
     {'8', 0xFF00},
     {'9', 0xEF00},
+
+    /* Letters */
+    {'d', 0xF300},
+    {'m', 0xB210},
+    //{'n', 0x2210},
+    {'n', 0x9001},
+    //{'u', 0x6084},
+    {'u', 0x0310},
+
+    /* Others */
+    {' ', 0x0000},
+    {'*', 0xA0DD},
+    {'(', 0x0041},
+    {')', 0x0088},
+    {'+', 0xA000},
+    {'-', 0xA014},
+    {'/', 0x00C0},
+    {'\\', 0x0009},
+    {255, 0xFFDD},
 };
 
 void lcd_gh08172::set_character(uint16_t value, uint8_t position)
@@ -125,22 +146,34 @@ lcd_gh08172::lcd_gh08172()
 
 bool lcd_gh08172::write(const std::string &s)
 {
-    if (s.length() >= this->positions)
-        return false;
-
     uint8_t position = 0;
-    for (auto c : s)
+    for (std::size_t i = 0; i < s.length(); i++)
     {
-        if (std::islower(c))
-            c = std::toupper(c);
+        auto char_map_item = this->character_map.find(s[i]);
+        if (char_map_item == this->character_map.end())
+        {
+            char_map_item = this->character_map.find(std::toupper(s[i]));
+            if (char_map_item == this->character_map.end())
+            {
+                continue;   /* TODO: Or return false? */
+            }
+        }
 
-        auto lcd_character = this->character_map.find(c);
-        if (lcd_character == this->character_map.end())
-            continue; /* TODO: Or return false? */
+        uint16_t lcd_char = char_map_item->second;
 
-        this->set_character(lcd_character->second, position++);
+        /* Colon or comma cannot be added on  pre-last & last position */
+        if (position < this->positions - 2)
+        {
+            if (s[i + 1] == ',' || s[i + 1] == '.')
+                lcd_char |= 0x0002;
+
+            if (s[i + 1] == ':')
+                lcd_char |= 0x0020;
+        }
+
+        this->set_character(lcd_char, position++);
     }
 
     drivers::lcd::update();
-    return true;
+    return position < this->positions;
 }

@@ -74,15 +74,14 @@ public:
     ~lcd_gh08172();
     bool write(const std::string &s);
 private:
-    const uint8_t segments = 16;
-    const uint8_t positions = 6;
-    const uint8_t bars = 4;
+    const uint8_t segments = 16;    /* Number of segments in one LCD position (character) */
+    const uint8_t positions = 6;    /* Number of LCD positions */
+    const uint8_t bars = 4;         /* Number of bar segments */
 
     static const std::map<const char, uint16_t> character_map;
 
     void set_character(uint16_t value, uint8_t position);
     void set_bar(bool value, uint8_t bar);
-
 };
 
 }
