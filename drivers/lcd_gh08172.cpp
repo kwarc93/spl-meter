@@ -12,7 +12,6 @@
 
 #include <hal/hal_lcd.hpp>
 
-#include <tuple>
 #include <array>
 
 using namespace drivers;

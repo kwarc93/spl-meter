@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#include <string>
 
 #include <hal/hal_system.hpp>
 #include <hal/hal_delay.hpp>
@@ -21,7 +22,11 @@ int main(void)
     auto lcd = new drivers::lcd_gh08172();
     auto debug_led = new hal::leds::debug();
 
-    lcd->write("/HELLO");
+    /* test */
+    uint8_t spl_value = 95;
+    uint8_t padding = spl_value / 100 ? 0 : spl_value / 10 ? 1 : 2;
+    std::string lcd_str = "A:" + std::string(padding, ' ') + std::to_string(spl_value) + "dB";
+    lcd->write(lcd_str);
 
     while (true)
     {
