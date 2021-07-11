@@ -98,6 +98,26 @@ public:
 
     static void set_msi(msi_clock clock);
 
+    /** @brief  Gets actual system clock frequency.
+     *  @param  None
+     *  @retval System clock frequency in Hz
+     */
+    static uint32_t get_sysclk_freq(void);
+
+    /**
+     * @brief   Gets actual frequency for given bus.
+     * @param   bus - @ref bus
+     * @return  0 if bus is not valid
+     */
+    static uint32_t get_bus_freq(bus bus);
+
+    /**
+     * @brief   Gets actual prescaler for given bus.
+     * @param   bus - @ref bus
+     * @return  -1 if bus is not valid
+     */
+    static int8_t get_bus_presc(bus bus);
+
     /** @brief  Enables/disables high speed internal clock.
      *  @param  state - true enables, false disables clock.
      *  @retval None
@@ -137,6 +157,17 @@ public:
 
     /** @brief  Clears reset source flags. */
     static void clear_reset_source(void);
+
+private:
+    static uint32_t get_ahb_freq(void);
+    static uint32_t get_apb1_freq(void);
+    static uint32_t get_apb2_freq(void);
+
+    static uint8_t get_ahb_presc(void);
+    static uint8_t get_apb1_presc(void);
+    static uint8_t get_apb2_presc(void);
+
+    static uint32_t get_sysclk_from_pll_source(void);
 
 };
 

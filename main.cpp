@@ -11,7 +11,9 @@
 #include <hal/hal_system.hpp>
 #include <hal/hal_delay.hpp>
 #include <hal/hal_led.hpp>
+
 #include <drivers/lcd_gh08172.hpp>
+#include <drivers/stm32l4/dfsdm.hpp>
 
 int main(void)
 {
@@ -22,11 +24,15 @@ int main(void)
     auto lcd = new drivers::lcd_gh08172();
     auto debug_led = new hal::leds::debug();
 
-    /* test */
+    /* LCD test */
     uint8_t spl_value = 95;
     uint8_t padding = spl_value / 100 ? 0 : spl_value / 10 ? 1 : 2;
     std::string lcd_str = "A:" + std::string(padding, ' ') + std::to_string(spl_value) + "dB";
     lcd->write(lcd_str);
+
+    /* DFSDM test */
+    drivers::dfsdm::enable();
+    drivers::dfsdm::configure_clock_output(true, drivers::dfsdm::clk_out_src::APB2_CLK, 2400000);
 
     while (true)
     {
