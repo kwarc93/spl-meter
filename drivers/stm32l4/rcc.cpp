@@ -137,11 +137,11 @@ void rcc::disable_all_periph_clocks(void)
 
 //-----------------------------------------------------------------------------
 
-void rcc::enable_periph_clock(const periph_bus &pbus, bool en)
+void rcc::toggle_periph_clock(const periph_bus &pbus, bool state)
 {
     volatile uint32_t *reg = static_cast<volatile uint32_t*>(bus_map[static_cast<uint8_t>(pbus.bus)]);
 
-    if (en)
+    if (state)
         *reg |= pbus.periph;
     else
         *reg &= ~(pbus.periph);

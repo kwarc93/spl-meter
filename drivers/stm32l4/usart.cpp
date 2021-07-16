@@ -37,10 +37,10 @@ static const std::map<usart::id, usart::usart_hw> usartx =
 
 usart::usart(id id, uint32_t baudrate) : hw (usartx.at(id))
 {
-    rcc::enable_periph_clock(this->hw.pbus, true);
+    rcc::toggle_periph_clock(this->hw.pbus, true);
 
-    gpio::init(this->hw.tx_pin, this->hw.pin_af, gpio::mode::af);
-    gpio::init(this->hw.rx_pin, this->hw.pin_af, gpio::mode::af);
+    gpio::init(this->hw.tx_pin, gpio::mode::af, this->hw.pin_af);
+    gpio::init(this->hw.rx_pin, gpio::mode::af, this->hw.pin_af);
 
     this->hw.reg->BRR = (uint32_t) (hal::system::system_clock + baudrate / 2) / baudrate;
     this->hw.reg->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;

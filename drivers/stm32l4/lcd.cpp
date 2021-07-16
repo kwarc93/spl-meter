@@ -37,7 +37,7 @@ bool lcd::init(void)
     rcc::toggle_lse(true);
 
     /* Enable LCD peripheral Clock */
-    rcc::enable_periph_clock({rcc::bus::APB1, RCC_APB1ENR1_LCDEN}, true);
+    rcc::toggle_periph_clock({rcc::bus::APB1, RCC_APB1ENR1_LCDEN}, true);
 
     if (LCD->CR & LCD_CR_LCDEN)
         return false;

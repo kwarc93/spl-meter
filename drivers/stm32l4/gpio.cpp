@@ -21,28 +21,28 @@ void gpio::enable_clock(port port)
     switch (port)
     {
         case port::porta:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOA), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOA), true);
             break;
         case port::portb:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOB), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOB), true);
             break;
         case port::portc:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOC), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOC), true);
             break;
         case port::portd:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOD), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOD), true);
             break;
         case port::porte:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOE), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOE), true);
             break;
         case port::portf:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOF), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOF), true);
             break;
         case port::portg:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOG), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOG), true);
             break;
         case port::porth:
-            rcc::enable_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOH), true);
+            rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB2, GPIOH), true);
             break;
         default:
             break;
@@ -52,7 +52,7 @@ void gpio::enable_clock(port port)
 //-----------------------------------------------------------------------------
 /* public */
 
-void gpio::init(const io &io, af af, mode mode, type type, speed speed, pupd pupd)
+void gpio::init(const io &io, mode mode, af af, type type, speed speed, pupd pupd)
 {
     enable_clock(io.port);
 

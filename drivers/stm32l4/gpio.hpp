@@ -59,8 +59,8 @@ public:
     };
 
     static void init(const io &io,
-                     af af = af::af0,
                      mode mode = mode::output,
+                     af af = af::af0,
                      type type = type::pp,
                      speed speed = speed::very_high,
                      pupd pupd = pupd::none);

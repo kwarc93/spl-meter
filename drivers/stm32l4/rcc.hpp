@@ -92,9 +92,9 @@ public:
     /**
      * @brief   Enables or disables selected peripheral clock.
      * @param   obj - pointer to structure created by @ref RCC_PERIPH_BUS
-     * @param   en - true for enable, false for disable clock
+     * @param   state - true for enable, false for disable clock
      */
-    static void enable_periph_clock(const periph_bus &pbus, bool en);
+    static void toggle_periph_clock(const periph_bus &pbus, bool state);
 
     static void set_msi(msi_clock clock);
 

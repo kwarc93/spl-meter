@@ -31,8 +31,17 @@ int main(void)
     lcd->write(lcd_str);
 
     /* DFSDM test */
-    drivers::dfsdm::enable();
-    drivers::dfsdm::configure_clock_output(true, drivers::dfsdm::clk_out_src::APB2_CLK, 2400000);
+    using drivers::dfsdm;
+    dfsdm::enable();
+    dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, 2400000, true);
+    dfsdm::channel::set_offset(dfsdm::channel::id::ch2, 0);
+    dfsdm::channel::set_bitshift(dfsdm::channel::id::ch2, 16);
+    dfsdm::channel::configure(dfsdm::channel::id::ch2,
+                              dfsdm::channel::data_pack::standard,
+                              dfsdm::channel::data_input::ext_pin,
+                              dfsdm::channel::clk_src::int_ckout,
+                              dfsdm::channel::protocol::spi_r_edge,
+                              true);
 
     while (true)
     {
