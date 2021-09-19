@@ -52,7 +52,7 @@ void gpio::enable_clock(port port)
 //-----------------------------------------------------------------------------
 /* public */
 
-void gpio::init(const io &io, mode mode, af af, type type, speed speed, pupd pupd)
+void gpio::configure(const io &io, mode mode, af af, type type, speed speed, pupd pupd)
 {
     enable_clock(io.port);
 

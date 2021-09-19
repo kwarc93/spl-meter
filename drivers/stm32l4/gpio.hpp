@@ -58,12 +58,12 @@ public:
         gpio::pin pin;
     };
 
-    static void init(const io &io,
-                     mode mode = mode::output,
-                     af af = af::af0,
-                     type type = type::pp,
-                     speed speed = speed::very_high,
-                     pupd pupd = pupd::none);
+    static void configure(const io &io,
+                          mode mode = mode::output,
+                          af af = af::af0,
+                          type type = type::pp,
+                          speed speed = speed::very_high,
+                          pupd pupd = pupd::none);
     static bool read(const io &io);
     static void write(const io &io, bool state);
     static void toggle(const io &io);

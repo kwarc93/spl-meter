@@ -130,7 +130,7 @@ lcd_gh08172::lcd_gh08172()
 {
     /* TODO: Move GPIO initialization to low level LCD driver? */
     for (const auto &pin : hal::lcd::gpio)
-        gpio::init(pin, gpio::mode::af, gpio::af::af11);
+        gpio::configure(pin, gpio::mode::af, gpio::af::af11);
 
     drivers::lcd::init();
 
