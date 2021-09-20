@@ -20,14 +20,19 @@ using namespace drivers;
 namespace
 {
 
-DFSDM_Channel_TypeDef * get_channel_reg(dfsdm::channel::id ch)
+DFSDM_Channel_TypeDef *get_channel_reg(dfsdm::channel::id ch)
 {
     return DFSDM_Channel0 + (DFSDM_Channel1 - DFSDM_Channel0) * static_cast<uint8_t>(ch);
 }
 
-DFSDM_Filter_TypeDef * get_filter_reg(dfsdm::filter::id f)
+DFSDM_Filter_TypeDef *get_filter_reg(dfsdm::filter::id f)
 {
     return DFSDM_Filter0 + (DFSDM_Filter1 - DFSDM_Filter0) * static_cast<uint8_t>(f);
+}
+
+DMA_Channel_TypeDef *get_dma_channel_reg(dfsdm::filter::id f)
+{
+    return DMA1_Channel4 + (DMA1_Channel5 - DMA1_Channel4) * static_cast<uint8_t>(f);
 }
 
 }
@@ -170,7 +175,58 @@ void dfsdm::filter::enable(id f, bool state)
         filter->FLTCR1 &= ~DFSDM_FLTCR1_DFEN;
 }
 
-void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg)
+void dfsdm::filter::enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb)
+{
+    const uint8_t filter_id = static_cast<uint8_t>(f);
+
+    /* Save output data buffer properties */
+    output_data[filter_id].buffer = data_buffer;
+    output_data[filter_id].buffer_len = data_buffer_len;
+    output_data[filter_id].ready_callback = data_ready_cb;
+
+    /* Enable filter DMA requests */
+    auto filter = get_filter_reg(f);
+    filter->FLTCR1 |= DFSDM_FLTCR1_RDMAEN;
+
+    /* Configure DMA */
+    auto dma_ch = get_dma_channel_reg(f);
+
+    rcc::toggle_periph_clock(RCC_PERIPH_BUS(AHB1, DMA1), true);
+    dma_ch->CCR &= ~DMA_CCR_EN;
+
+    /* Data flow: periph > mem; pDataSize: 16bit; mDataSize: 16bit(increment), circular mode */
+    dma_ch->CCR = DMA_CCR_MINC | DMA_CCR_PSIZE_0 | DMA_CCR_MSIZE_0 | DMA_CCR_CIRC;
+    dma_ch->CCR |= DMA_CCR_HTIE | DMA_CCR_TCIE;
+    dma_ch->CPAR = reinterpret_cast<uint32_t>(&filter->FLTRDATAR) + sizeof(uint16_t);
+    dma_ch->CMAR = reinterpret_cast<uint32_t>(data_buffer);
+    dma_ch->CNDTR = data_buffer_len;
+
+    DMA1_CSELR->CSELR &= ~(0b1111 << (12 + filter_id * 4));
+
+    /* Priority level */
+    IRQn_Type nvic_irq = static_cast<IRQn_Type>(DMA1_Channel4_IRQn + filter_id);
+    NVIC_SetPriority(nvic_irq, NVIC_EncodePriority( NVIC_GetPriorityGrouping(), 0, 0 ));
+
+    /* Enable IRQ */
+    NVIC_EnableIRQ(nvic_irq);
+
+    /* Start DMA */
+    dma_ch->CCR |= DMA_CCR_EN;
+}
+
+void dfsdm::filter::dma_half_transfer_complete(id f)
+{
+    uint8_t filter_id = static_cast<uint8_t>(f);
+    dfsdm::output_data[filter_id].ready_callback(&dfsdm::output_data[filter_id].buffer[dfsdm::output_data[filter_id].buffer_len / 2], dfsdm::output_data[filter_id].buffer_len / 2);
+}
+
+void dfsdm::filter::dma_full_transfer_complete(id f)
+{
+    uint8_t filter_id = static_cast<uint8_t>(f);
+    dfsdm::output_data[filter_id].ready_callback(&dfsdm::output_data[filter_id].buffer[0], dfsdm::output_data[filter_id].buffer_len / 2);
+}
+
+void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode, bool fast_mode, bool sync_with_f0)
 {
     auto filter = get_filter_reg(f);
 
@@ -185,21 +241,16 @@ void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg)
 
     filter->FLTFCR &= ~DFSDM_FLTFCR_IOSR_Msk;
     filter->FLTFCR |= avg << DFSDM_FLTFCR_IOSR_Pos;
-}
-
-void dfsdm::filter::configure_conversions(id f, bool fast_mode, bool continous_mode, bool sync_with_f0)
-{
-    auto filter = get_filter_reg(f);
-
-    if (fast_mode)
-        filter->FLTCR1 |= DFSDM_FLTCR1_FAST;
-    else
-        filter->FLTCR1 &= ~DFSDM_FLTCR1_FAST;
 
     if (continous_mode)
         filter->FLTCR1 |= DFSDM_FLTCR1_RCONT;
     else
         filter->FLTCR1 &= ~DFSDM_FLTCR1_RCONT;
+
+    if (fast_mode)
+        filter->FLTCR1 |= DFSDM_FLTCR1_FAST;
+    else
+        filter->FLTCR1 &= ~DFSDM_FLTCR1_FAST;
 
     if (sync_with_f0)
         filter->FLTCR1 |= DFSDM_FLTCR1_RSYNC;
@@ -221,7 +272,7 @@ void dfsdm::filter::trigger(id f)
     filter->FLTCR1 |= DFSDM_FLTCR1_RSWSTART;
 }
 
-int32_t dfsdm::filter::poll(id f)
+int32_t dfsdm::filter::read(id f)
 {
     auto filter = get_filter_reg(f);
 
@@ -230,4 +281,26 @@ int32_t dfsdm::filter::poll(id f)
     /* Extend int24_t to int32_t with sign */
     struct int24_t { int32_t value:24; };
     return int24_t{static_cast<int32_t>(filter->FLTRDATAR >> 8)}.value;
+}
+
+//-----------------------------------------------------------------------------
+/* interrupt handlers */
+
+extern "C" void DMA1_Channel4_IRQHandler(void)
+{
+    /* Transfer Complete */
+    if (DMA1->ISR & DMA_ISR_TCIF4)
+    {
+        DMA1->IFCR |= DMA_IFCR_CTCIF4;
+
+        dfsdm::filter::dma_half_transfer_complete(dfsdm::filter::id::f0);
+    }
+
+    /* Half-Transfer Complete */
+    if (DMA1->ISR & DMA_ISR_HTIF4)
+    {
+        DMA1->IFCR |= DMA_IFCR_CHTIF4;
+
+        dfsdm::filter::dma_full_transfer_complete(dfsdm::filter::id::f0);
+    }
 }

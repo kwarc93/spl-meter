@@ -87,6 +87,89 @@ __isr_vector:
     .long   SysTick_Handler       /* SysTick Handler */
 
     /* External interrupts */
+    .long   WWDG_IRQHandler
+    .long   PVD_PVM_IRQHandler
+    .long   TAMP_STAMP_IRQHandler
+    .long   RTC_WKUP_IRQHandler
+    .long   FLASH_IRQHandler
+    .long   RCC_IRQHandler
+    .long   EXTI0_IRQHandler
+    .long   EXTI1_IRQHandler
+    .long   EXTI2_IRQHandler
+    .long   EXTI3_IRQHandler
+    .long   EXTI4_IRQHandler
+    .long   DMA1_Channel1_IRQHandler
+    .long   DMA1_Channel2_IRQHandler
+    .long   DMA1_Channel3_IRQHandler
+    .long   DMA1_Channel4_IRQHandler
+    .long   DMA1_Channel5_IRQHandler
+    .long   DMA1_Channel6_IRQHandler
+    .long   DMA1_Channel7_IRQHandler
+    .long   ADC1_2_IRQHandler
+    .long   CAN1_TX_IRQHandler
+    .long   CAN1_RX0_IRQHandler
+    .long   CAN1_RX1_IRQHandler
+    .long   CAN1_SCE_IRQHandler
+    .long   EXTI9_5_IRQHandler
+    .long   TIM1_BRK_TIM15_IRQHandler
+    .long   TIM1_UP_TIM16_IRQHandler
+    .long   TIM1_TRG_COM_TIM17_IRQHandler
+    .long   TIM1_CC_IRQHandler
+    .long   TIM2_IRQHandler
+    .long   TIM3_IRQHandler
+    .long   TIM4_IRQHandler
+    .long   I2C1_EV_IRQHandler
+    .long   I2C1_ER_IRQHandler
+    .long   I2C2_EV_IRQHandler
+    .long   I2C2_ER_IRQHandler
+    .long   SPI1_IRQHandler
+    .long   SPI2_IRQHandler
+    .long   USART1_IRQHandler
+    .long   USART2_IRQHandler
+    .long   USART3_IRQHandler
+    .long   EXTI15_10_IRQHandler
+    .long   RTC_Alarm_IRQHandler
+    .long   DFSDM1_FLT3_IRQHandler
+    .long   TIM8_BRK_IRQHandler
+    .long   TIM8_UP_IRQHandler
+    .long   TIM8_TRG_COM_IRQHandler
+    .long   TIM8_CC_IRQHandler
+    .long   ADC3_IRQHandler
+    .long   FMC_IRQHandler
+    .long   SDMMC1_IRQHandler
+    .long   TIM5_IRQHandler
+    .long   SPI3_IRQHandler
+    .long   UART4_IRQHandler
+    .long   UART5_IRQHandler
+    .long   TIM6_DAC_IRQHandler
+    .long   TIM7_IRQHandler
+    .long   DMA2_Channel1_IRQHandler
+    .long   DMA2_Channel2_IRQHandler
+    .long   DMA2_Channel3_IRQHandler
+    .long   DMA2_Channel4_IRQHandler
+    .long   DMA2_Channel5_IRQHandler
+    .long   DFSDM1_FLT0_IRQHandler
+    .long   DFSDM1_FLT1_IRQHandler
+    .long   DFSDM1_FLT2_IRQHandler
+    .long   COMP_IRQHandler
+    .long   LPTIM1_IRQHandler
+    .long   LPTIM2_IRQHandler
+    .long   OTG_FS_IRQHandler
+    .long   DMA2_Channel6_IRQHandler
+    .long   DMA2_Channel7_IRQHandler
+    .long   LPUART1_IRQHandler
+    .long   QUADSPI_IRQHandler
+    .long   I2C3_EV_IRQHandler
+    .long   I2C3_ER_IRQHandler
+    .long   SAI1_IRQHandler
+    .long   SAI2_IRQHandler
+    .long   SWPMI1_IRQHandler
+    .long   TSC_IRQHandler
+    .long   LCD_IRQHandler
+    .long   0
+    .long   RNG_IRQHandler
+    .long   FPU_IRQHandler
+
     .long   Default_Handler
 
     .size   __isr_vector, . - __isr_vector
@@ -252,6 +335,90 @@ Default_Handler:
     def_irq_handler DebugMon_Handler
     def_irq_handler PendSV_Handler
     def_irq_handler SysTick_Handler
+
+    /* External interrupts */
+    def_irq_handler WWDG_IRQHandler
+    def_irq_handler PVD_PVM_IRQHandler
+    def_irq_handler TAMP_STAMP_IRQHandler
+    def_irq_handler RTC_WKUP_IRQHandler
+    def_irq_handler FLASH_IRQHandler
+    def_irq_handler RCC_IRQHandler
+    def_irq_handler EXTI0_IRQHandler
+    def_irq_handler EXTI1_IRQHandler
+    def_irq_handler EXTI2_IRQHandler
+    def_irq_handler EXTI3_IRQHandler
+    def_irq_handler EXTI4_IRQHandler
+    def_irq_handler DMA1_Channel1_IRQHandler
+    def_irq_handler DMA1_Channel2_IRQHandler
+    def_irq_handler DMA1_Channel3_IRQHandler
+    def_irq_handler DMA1_Channel4_IRQHandler
+    def_irq_handler DMA1_Channel5_IRQHandler
+    def_irq_handler DMA1_Channel6_IRQHandler
+    def_irq_handler DMA1_Channel7_IRQHandler
+    def_irq_handler ADC1_2_IRQHandler
+    def_irq_handler CAN1_TX_IRQHandler
+    def_irq_handler CAN1_RX0_IRQHandler
+    def_irq_handler CAN1_RX1_IRQHandler
+    def_irq_handler CAN1_SCE_IRQHandler
+    def_irq_handler EXTI9_5_IRQHandler
+    def_irq_handler TIM1_BRK_TIM15_IRQHandler
+    def_irq_handler TIM1_UP_TIM16_IRQHandler
+    def_irq_handler TIM1_TRG_COM_TIM17_IRQHandler
+    def_irq_handler TIM1_CC_IRQHandler
+    def_irq_handler TIM2_IRQHandler
+    def_irq_handler TIM3_IRQHandler
+    def_irq_handler TIM4_IRQHandler
+    def_irq_handler I2C1_EV_IRQHandler
+    def_irq_handler I2C1_ER_IRQHandler
+    def_irq_handler I2C2_EV_IRQHandler
+    def_irq_handler I2C2_ER_IRQHandler
+    def_irq_handler SPI1_IRQHandler
+    def_irq_handler SPI2_IRQHandler
+    def_irq_handler USART1_IRQHandler
+    def_irq_handler USART2_IRQHandler
+    def_irq_handler USART3_IRQHandler
+    def_irq_handler EXTI15_10_IRQHandler
+    def_irq_handler RTC_Alarm_IRQHandler
+    def_irq_handler DFSDM1_FLT3_IRQHandler
+    def_irq_handler TIM8_BRK_IRQHandler
+    def_irq_handler TIM8_UP_IRQHandler
+    def_irq_handler TIM8_TRG_COM_IRQHandler
+    def_irq_handler TIM8_CC_IRQHandler
+    def_irq_handler ADC3_IRQHandler
+    def_irq_handler FMC_IRQHandler
+    def_irq_handler SDMMC1_IRQHandler
+    def_irq_handler TIM5_IRQHandler
+    def_irq_handler SPI3_IRQHandler
+    def_irq_handler UART4_IRQHandler
+    def_irq_handler UART5_IRQHandler
+    def_irq_handler TIM6_DAC_IRQHandler
+    def_irq_handler TIM7_IRQHandler
+    def_irq_handler DMA2_Channel1_IRQHandler
+    def_irq_handler DMA2_Channel2_IRQHandler
+    def_irq_handler DMA2_Channel3_IRQHandler
+    def_irq_handler DMA2_Channel4_IRQHandler
+    def_irq_handler DMA2_Channel5_IRQHandler
+    def_irq_handler DFSDM1_FLT0_IRQHandler
+    def_irq_handler DFSDM1_FLT1_IRQHandler
+    def_irq_handler DFSDM1_FLT2_IRQHandler
+    def_irq_handler COMP_IRQHandler
+    def_irq_handler LPTIM1_IRQHandler
+    def_irq_handler LPTIM2_IRQHandler
+    def_irq_handler OTG_FS_IRQHandler
+    def_irq_handler DMA2_Channel6_IRQHandler
+    def_irq_handler DMA2_Channel7_IRQHandler
+    def_irq_handler LPUART1_IRQHandler
+    def_irq_handler QUADSPI_IRQHandler
+    def_irq_handler I2C3_EV_IRQHandler
+    def_irq_handler I2C3_ER_IRQHandler
+    def_irq_handler SAI1_IRQHandler
+    def_irq_handler SAI2_IRQHandler
+    def_irq_handler SWPMI1_IRQHandler
+    def_irq_handler TSC_IRQHandler
+    def_irq_handler LCD_IRQHandler
+    def_irq_handler RNG_IRQHandler
+    def_irq_handler FPU_IRQHandler
+
     def_irq_handler DEF_IRQHandler
 
     .end

@@ -9,16 +9,20 @@
 #define STM32L4_DFSDM_HPP_
 
 #include <cstdint>
+#include <cstddef>
+
 
 namespace drivers
 {
-
 //--------------------------------------------------------------------------------
+/* TODO: Refactor this class to be non-static, add templates for channel & filter classes */
 
 class dfsdm final
 {
 public:
     dfsdm() = delete;
+
+    typedef void (*data_ready_callback_t)(const int16_t *data, uint16_t data_len);
 
     enum class clk_out_src
     {
@@ -80,15 +84,26 @@ public:
         };
 
         static void enable(id f, bool state);
-        static void configure(id f, order ord, uint16_t decim, uint8_t avg);
-        static void configure_conversions(id f, bool fast_mode, bool continous_mode, bool sync_with_f0);
-//        static void configure_dma(void);
+        static void enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb);
+        static void dma_half_transfer_complete(id f);
+        static void dma_full_transfer_complete(id f);
+        static void configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode = true, bool fast_mode = true, bool sync_with_f0 = false);
         static void link_channel(id f, channel::id ch);
         static void trigger(id f);
-        static int32_t poll(id f);
+        static int32_t read(id f);
     } filter;
 
 private:
+
+    struct output_data
+    {
+        int16_t *buffer;
+        uint16_t buffer_len;
+        data_ready_callback_t ready_callback;
+    };
+
+    inline static output_data output_data[4] = {0};
+
     static void global_toggle(bool state);
 };
 
