@@ -85,8 +85,7 @@ public:
 
         static void enable(id f, bool state);
         static void enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb);
-        static void dma_half_transfer_complete(id f);
-        static void dma_full_transfer_complete(id f);
+        static void handle_dma_transfer(void);
         static void configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode = true, bool fast_mode = true, bool sync_with_f0 = false);
         static void link_channel(id f, channel::id ch);
         static void trigger(id f);
@@ -105,6 +104,7 @@ private:
     inline static output_data output_data[4] = {0};
 
     static void global_toggle(bool state);
+    static void handle_dma_transfer(filter::id f);
 };
 
 //--------------------------------------------------------------------------------

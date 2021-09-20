@@ -48,6 +48,30 @@ void dfsdm::global_toggle(bool state)
         DFSDM_Channel0->CHCFGR1 &= ~DFSDM_CHCFGR1_DFSDMEN;
 }
 
+void dfsdm::handle_dma_transfer(filter::id f)
+{
+    if (!(get_filter_reg(f)->FLTCR1 & DFSDM_FLTCR1_RDMAEN))
+        return;
+
+    uint8_t filter_id = static_cast<uint8_t>(f);
+
+    /* Half-Transfer Complete */
+    if (DMA1->ISR & (1 << (DMA_ISR_HTIF4_Pos + filter_id * 4)))
+    {
+        DMA1->IFCR |= (1 << (DMA_IFCR_CHTIF4_Pos + filter_id * 4));
+
+        output_data[filter_id].ready_callback(&output_data[filter_id].buffer[0], output_data[filter_id].buffer_len / 2);
+    }
+
+    /* Transfer Complete */
+    if (DMA1->ISR & (1 << (DMA_ISR_TCIF4_Pos + filter_id * 4)))
+    {
+        DMA1->IFCR |= (1 << (DMA_IFCR_CTCIF4_Pos + filter_id * 4));
+
+        output_data[filter_id].ready_callback(&output_data[filter_id].buffer[output_data[filter_id].buffer_len / 2], output_data[filter_id].buffer_len / 2);
+    }
+}
+
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -214,16 +238,23 @@ void dfsdm::filter::enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_
     dma_ch->CCR |= DMA_CCR_EN;
 }
 
-void dfsdm::filter::dma_half_transfer_complete(id f)
+void dfsdm::filter::handle_dma_transfer(void)
 {
-    uint8_t filter_id = static_cast<uint8_t>(f);
-    dfsdm::output_data[filter_id].ready_callback(&dfsdm::output_data[filter_id].buffer[dfsdm::output_data[filter_id].buffer_len / 2], dfsdm::output_data[filter_id].buffer_len / 2);
-}
+    /* Global interrupt for channel 4 (Filter 0) */
+    if (DMA1->ISR & DMA_ISR_GIF4)
+        dfsdm::handle_dma_transfer(filter::id::f0);
 
-void dfsdm::filter::dma_full_transfer_complete(id f)
-{
-    uint8_t filter_id = static_cast<uint8_t>(f);
-    dfsdm::output_data[filter_id].ready_callback(&dfsdm::output_data[filter_id].buffer[0], dfsdm::output_data[filter_id].buffer_len / 2);
+    /* Global interrupt for channel 5 (Filter 1) */
+    if (DMA1->ISR & DMA_ISR_GIF5)
+        dfsdm::handle_dma_transfer(filter::id::f1);
+
+    /* Global interrupt for channel 6 (Filter 2) */
+    if (DMA1->ISR & DMA_ISR_GIF6)
+        dfsdm::handle_dma_transfer(filter::id::f2);
+
+    /* Global interrupt for channel 7 (Filter 3) */
+    if (DMA1->ISR & DMA_ISR_GIF7)
+        dfsdm::handle_dma_transfer(filter::id::f3);
 }
 
 void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode, bool fast_mode, bool sync_with_f0)
@@ -281,26 +312,4 @@ int32_t dfsdm::filter::read(id f)
     /* Extend int24_t to int32_t with sign */
     struct int24_t { int32_t value:24; };
     return int24_t{static_cast<int32_t>(filter->FLTRDATAR >> 8)}.value;
-}
-
-//-----------------------------------------------------------------------------
-/* interrupt handlers */
-
-extern "C" void DMA1_Channel4_IRQHandler(void)
-{
-    /* Transfer Complete */
-    if (DMA1->ISR & DMA_ISR_TCIF4)
-    {
-        DMA1->IFCR |= DMA_IFCR_CTCIF4;
-
-        dfsdm::filter::dma_half_transfer_complete(dfsdm::filter::id::f0);
-    }
-
-    /* Half-Transfer Complete */
-    if (DMA1->ISR & DMA_ISR_HTIF4)
-    {
-        DMA1->IFCR |= DMA_IFCR_CHTIF4;
-
-        dfsdm::filter::dma_full_transfer_complete(dfsdm::filter::id::f0);
-    }
 }
