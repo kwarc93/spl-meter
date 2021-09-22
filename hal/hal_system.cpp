@@ -54,8 +54,3 @@ extern "C" void _ttywrch(int ch)
     auto &debug = usart::debug::get_instance();
     debug.write(static_cast<std::byte>(ch));
 }
-
-extern "C" void SysTick_Handler(void)
-{
-
-}

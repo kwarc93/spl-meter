@@ -29,9 +29,6 @@ public:
         apb2, sysclk, sai1
     };
 
-    static void enable(bool state);
-    static uint32_t configure_clock_output(clk_out_src clk_src, uint32_t frequency, bool enabled);
-
     static class channel
     {
     public:
@@ -85,12 +82,15 @@ public:
 
         static void enable(id f, bool state);
         static void enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb);
-        static void handle_dma_transfer(void);
         static void configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode = true, bool fast_mode = true, bool sync_with_f0 = false);
         static void link_channel(id f, channel::id ch);
         static void trigger(id f);
         static int32_t read(id f);
     } filter;
+
+    static void enable(bool state);
+    static uint32_t configure_clock_output(clk_out_src clk_src, uint32_t frequency, bool enabled);
+    static void dma_handler(filter::id f);
 
 private:
 
@@ -104,7 +104,6 @@ private:
     inline static output_data output_data[4] = {0};
 
     static void global_toggle(bool state);
-    static void handle_dma_transfer(filter::id f);
 };
 
 //--------------------------------------------------------------------------------

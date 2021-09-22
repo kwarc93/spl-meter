@@ -36,6 +36,19 @@ namespace hal::interface
         virtual ~led() {};
         virtual void set(uint8_t brightness) = 0;
     };
+
+    class microphone
+    {
+    public:
+        typedef void (*data_ready_callback_t)(const int16_t *data, uint16_t data_len);
+
+        virtual ~microphone() {};
+        virtual void init(data_ready_callback_t data_ready) = 0;
+        virtual void enable(void) = 0;
+        virtual void disable(void) = 0;
+        virtual void set_gain(float gain) = 0;
+        virtual uint32_t get_sampling_frequency(void) = 0;
+    };
 }
 
 #endif /* HAL_INTERFACE_HPP_ */

@@ -48,30 +48,6 @@ void dfsdm::global_toggle(bool state)
         DFSDM_Channel0->CHCFGR1 &= ~DFSDM_CHCFGR1_DFSDMEN;
 }
 
-void dfsdm::handle_dma_transfer(filter::id f)
-{
-    if (!(get_filter_reg(f)->FLTCR1 & DFSDM_FLTCR1_RDMAEN))
-        return;
-
-    uint8_t filter_id = static_cast<uint8_t>(f);
-
-    /* Half-Transfer Complete */
-    if (DMA1->ISR & (1 << (DMA_ISR_HTIF4_Pos + filter_id * 4)))
-    {
-        DMA1->IFCR |= (1 << (DMA_IFCR_CHTIF4_Pos + filter_id * 4));
-
-        output_data[filter_id].ready_callback(&output_data[filter_id].buffer[0], output_data[filter_id].buffer_len / 2);
-    }
-
-    /* Transfer Complete */
-    if (DMA1->ISR & (1 << (DMA_ISR_TCIF4_Pos + filter_id * 4)))
-    {
-        DMA1->IFCR |= (1 << (DMA_IFCR_CTCIF4_Pos + filter_id * 4));
-
-        output_data[filter_id].ready_callback(&output_data[filter_id].buffer[output_data[filter_id].buffer_len / 2], output_data[filter_id].buffer_len / 2);
-    }
-}
-
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -137,6 +113,33 @@ uint32_t dfsdm::configure_clock_output(clk_out_src clk_src, uint32_t frequency, 
 
     global_toggle(true);
     return output_clock_freq;
+}
+
+
+void dfsdm::dma_handler(filter::id f)
+{
+    if (!(get_filter_reg(f)->FLTCR1 & DFSDM_FLTCR1_RDMAEN))
+        return;
+
+    uint8_t filter_id = static_cast<uint8_t>(f);
+
+    /* Half-Transfer */
+    if (DMA1->ISR & (1 << (DMA_ISR_HTIF4_Pos + filter_id * 4)))
+    {
+        DMA1->IFCR |= (1 << (DMA_IFCR_CHTIF4_Pos + filter_id * 4));
+
+        if (output_data[filter_id].ready_callback != nullptr)
+            output_data[filter_id].ready_callback(&output_data[filter_id].buffer[0], output_data[filter_id].buffer_len / 2);
+    }
+
+    /* Transfer Complete */
+    if (DMA1->ISR & (1 << (DMA_ISR_TCIF4_Pos + filter_id * 4)))
+    {
+        DMA1->IFCR |= (1 << (DMA_IFCR_CTCIF4_Pos + filter_id * 4));
+
+        if (output_data[filter_id].ready_callback != nullptr)
+            output_data[filter_id].ready_callback(&output_data[filter_id].buffer[output_data[filter_id].buffer_len / 2], output_data[filter_id].buffer_len / 2);
+    }
 }
 
 void dfsdm::channel::configure(id ch, data_pack dp, data_input di, clk_src clk, protocol proto)
@@ -238,25 +241,6 @@ void dfsdm::filter::enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_
     dma_ch->CCR |= DMA_CCR_EN;
 }
 
-void dfsdm::filter::handle_dma_transfer(void)
-{
-    /* Global interrupt for channel 4 (Filter 0) */
-    if (DMA1->ISR & DMA_ISR_GIF4)
-        dfsdm::handle_dma_transfer(filter::id::f0);
-
-    /* Global interrupt for channel 5 (Filter 1) */
-    if (DMA1->ISR & DMA_ISR_GIF5)
-        dfsdm::handle_dma_transfer(filter::id::f1);
-
-    /* Global interrupt for channel 6 (Filter 2) */
-    if (DMA1->ISR & DMA_ISR_GIF6)
-        dfsdm::handle_dma_transfer(filter::id::f2);
-
-    /* Global interrupt for channel 7 (Filter 3) */
-    if (DMA1->ISR & DMA_ISR_GIF7)
-        dfsdm::handle_dma_transfer(filter::id::f3);
-}
-
 void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode, bool fast_mode, bool sync_with_f0)
 {
     auto filter = get_filter_reg(f);
@@ -264,14 +248,22 @@ void dfsdm::filter::configure(id f, order ord, uint16_t decim, uint8_t avg, bool
     filter->FLTFCR &= ~DFSDM_FLTFCR_FORD_Msk;
     filter->FLTFCR |= static_cast<uint32_t>(ord) << DFSDM_FLTFCR_FORD_Pos;
 
+    /* Trim value */
+    if (decim == 0)
+        decim = 1;
+
     if (decim > 1023)
         decim = 1023;
 
     filter->FLTFCR &= ~DFSDM_FLTFCR_FOSR_Msk;
-    filter->FLTFCR |= decim << DFSDM_FLTFCR_FOSR_Pos;
+    filter->FLTFCR |= (decim - 1) << DFSDM_FLTFCR_FOSR_Pos;
+
+    /* Trim value */
+    if (avg == 0)
+        avg = 1;
 
     filter->FLTFCR &= ~DFSDM_FLTFCR_IOSR_Msk;
-    filter->FLTFCR |= avg << DFSDM_FLTFCR_IOSR_Pos;
+    filter->FLTFCR |= (avg - 1) << DFSDM_FLTFCR_IOSR_Pos;
 
     if (continous_mode)
         filter->FLTCR1 |= DFSDM_FLTCR1_RCONT;
