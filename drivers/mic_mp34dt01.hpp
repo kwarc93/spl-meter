@@ -23,15 +23,20 @@ namespace drivers
         void enable(void);
         void disable(void);
         void set_gain(float gain);
+        uint32_t get_snr(void);
+        uint32_t get_aop(void);
+        int32_t get_sensitivity(void);
         uint32_t get_sampling_frequency(void);
 
     private:
+        static constexpr uint32_t aop = 120;            /* 120dB SPL */
+        static constexpr uint32_t snr = 61;             /* 61dB */
+        static constexpr int32_t sensitivity = -26;     /* -26dbFS */
+
         const drivers::dfsdm::channel::id channel;
         drivers::dfsdm::filter::id filter;
         uint32_t sampling_frequency;
-
-        static constexpr uint32_t max_samples = 4096;
-        volatile int16_t samples[max_samples];
+        volatile int16_t samples[4096];
     };
 }
 

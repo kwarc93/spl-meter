@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <string>
+#include <array>
+#include <cmath>
 
 #include <hal/hal_system.hpp>
 #include <hal/hal_delay.hpp>
@@ -17,8 +19,7 @@
 
 #include <cmsis/arm_math.h>
 
-static volatile float32_t dsp_samples_buffer[2048];
-static volatile float32_t rms = 0;
+static std::array<volatile float32_t, 2048> dsp_samples_buffer;
 static volatile bool data_ready = false;
 
 void mic_data_ready(const int16_t *data, uint16_t data_len)
@@ -33,14 +34,6 @@ void mic_data_ready(const int16_t *data, uint16_t data_len)
     for (uint32_t i = 0; i < data_len; i++)
         dsp_samples_buffer[i] = data[i];
 
-    /* Delete offset */
-    float32_t mean;
-    float32_t *dsp_buffer = const_cast<float32_t*>(dsp_samples_buffer);
-    arm_mean_f32(dsp_buffer, data_len, &mean);
-    arm_offset_f32(dsp_buffer, -mean, dsp_buffer, data_len);
-
-    /* Calculate RMS value */
-    arm_rms_f32(dsp_buffer, data_len, const_cast<float32_t*>(&rms));
     data_ready = true;
 }
 
@@ -54,7 +47,7 @@ int main(void)
     auto lcd = new drivers::lcd_gh08172();
     uint8_t spl_value = 95;
     uint8_t padding = spl_value / 100 ? 0 : spl_value / 10 ? 1 : 2;
-    std::string lcd_str = "A:" + std::string(padding, ' ') + std::to_string(spl_value) + "dB";
+    const std::string lcd_str = "A:" + std::string(padding, ' ') + std::to_string(spl_value) + "dB";
     lcd->write(lcd_str);
 
     /* Digital microphone driver test*/
@@ -71,7 +64,26 @@ int main(void)
     {
         if (data_ready)
         {
-            std::cout << "RMS: " << rms << std::endl;
+            float32_t *dsp_buffer = const_cast<float32_t*>(dsp_samples_buffer.data());
+            uint32_t data_len = dsp_samples_buffer.size();
+
+            /* Delete offset */
+            float32_t mean;
+            arm_mean_f32(dsp_buffer, data_len, &mean);
+            arm_offset_f32(dsp_buffer, -mean, dsp_buffer, data_len);
+
+            /* Normalize signal */
+            const float32_t scale = 1.0f / INT16_MAX;
+            arm_scale_f32(dsp_buffer, scale, dsp_buffer, data_len);
+
+            /* Calculate RMS value of normalized signal */
+            float32_t rms;
+            arm_rms_f32(dsp_buffer, data_len, const_cast<float32_t*>(&rms));
+
+            /* Calculate DB SPL */
+            float db_spl = microphone->get_aop() + 20.0f * log10f(rms);
+            std::cout << "dB SPL: " << db_spl << std::endl;
+
             data_ready = false;
         }
     }

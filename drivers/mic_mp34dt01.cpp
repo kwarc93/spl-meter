@@ -41,7 +41,7 @@ void mic_mp34dt01::init(hal::interface::microphone::data_ready_callback_t data_r
 
     dfsdm::filter::configure(this->filter, dfsdm::filter::order::sinc4, filter_decim, integrator_avg);
     dfsdm::filter::link_channel(this->filter, this->channel);
-    dfsdm::filter::enable_dma(this->filter, const_cast<int16_t*>(this->samples), this->max_samples, data_ready);
+    dfsdm::filter::enable_dma(this->filter, const_cast<int16_t*>(this->samples), sizeof(this->samples) / sizeof(*this->samples) , data_ready);
 
     uint32_t clk = dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, 2400000, true);
 
@@ -69,6 +69,21 @@ void mic_mp34dt01::disable(void)
 void mic_mp34dt01::set_gain(float gain)
 {
     /* TODO */
+}
+
+uint32_t mic_mp34dt01::get_snr(void)
+{
+    return this->snr;
+}
+
+uint32_t mic_mp34dt01::get_aop(void)
+{
+    return this->aop;
+}
+
+int32_t mic_mp34dt01::get_sensitivity(void)
+{
+    return this->sensitivity;
 }
 
 uint32_t mic_mp34dt01::get_sampling_frequency(void)

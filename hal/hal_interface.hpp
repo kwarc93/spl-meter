@@ -47,6 +47,9 @@ namespace hal::interface
         virtual void enable(void) = 0;
         virtual void disable(void) = 0;
         virtual void set_gain(float gain) = 0;
+        virtual uint32_t get_snr(void) = 0;
+        virtual uint32_t get_aop(void) = 0;
+        virtual int32_t get_sensitivity(void) = 0;
         virtual uint32_t get_sampling_frequency(void) = 0;
     };
 }
