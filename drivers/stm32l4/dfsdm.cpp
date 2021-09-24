@@ -116,7 +116,7 @@ uint32_t dfsdm::configure_clock_output(clk_out_src clk_src, uint32_t frequency, 
 }
 
 
-void dfsdm::dma_handler(filter::id f)
+void dfsdm::dma_irq_handler(filter::id f)
 {
     if (!(get_filter_reg(f)->FLTCR1 & DFSDM_FLTCR1_RDMAEN))
         return;

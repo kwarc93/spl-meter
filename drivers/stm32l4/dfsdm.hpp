@@ -90,7 +90,7 @@ public:
 
     static void enable(bool state);
     static uint32_t configure_clock_output(clk_out_src clk_src, uint32_t frequency, bool enabled);
-    static void dma_handler(filter::id f);
+    static void dma_irq_handler(filter::id f);
 
 private:
 

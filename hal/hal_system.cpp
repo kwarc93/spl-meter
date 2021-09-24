@@ -19,6 +19,10 @@ using namespace hal;
 
 //-----------------------------------------------------------------------------
 
+volatile uint32_t system::systick = 0;
+
+//-----------------------------------------------------------------------------
+
 void system::init(void)
 {
     /* Number of group priorities: 16, subpriorities: 16. */
