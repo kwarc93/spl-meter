@@ -45,7 +45,6 @@ int main(void)
 
     /* LCD driver test */
     auto lcd = new drivers::lcd_gh08172();
-    lcd->write(" SPL ");
 
     /* Digital microphone driver test*/
     auto microphone = new drivers::mic_mp34dt01(drivers::dfsdm::channel::id::ch2, drivers::dfsdm::filter::id::f0);
@@ -82,21 +81,13 @@ int main(void)
             float32_t rms;
             arm_rms_f32(dsp_buffer, data_len, &rms);
 
-            /* Calculate crest factor of waveform */
-            float32_t peak;
-            uint32_t peak_index;
-            arm_abs_f32(dsp_buffer, dsp_buffer, data_len);
-            arm_max_f32(dsp_buffer, data_len, &peak, &peak_index);
-
-            float32_t cf = peak / rms;
-
             /* Normalize RMS value */
             rms /= INT16_MAX;
 
             /* Calculate DB SPL */
             static uint32_t sum_cnt = 0;
             static float32_t db_spl_sum = 0;
-            db_spl_sum += microphone->get_aop() + 20.0f * log10f(rms * cf);
+            db_spl_sum += microphone->get_aop() + 20.0f * log10f(rms) + 3.0f;
             sum_cnt++;
 
             if (sum_cnt >= 4)

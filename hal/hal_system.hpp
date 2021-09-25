@@ -24,10 +24,14 @@ namespace hal::system
 
     void init(void);
 
+    /* Custom implementation of steady_clock */
     struct clock
     {
-        using duration = std::chrono::duration<std::uint32_t, std::milli>;
-        using time_point = std::chrono::time_point<clock>;
+        typedef std::chrono::milliseconds duration;
+        typedef duration::rep rep;
+        typedef duration::period period;
+        typedef std::chrono::time_point<clock, duration> time_point;
+
         static constexpr bool is_steady = true;
 
         static time_point now(void) noexcept
@@ -35,8 +39,8 @@ namespace hal::system
             return time_point{ duration{ systick } };
         }
 
-        template<class Rep, class Period>
-        static bool is_elapsed(time_point start, const std::chrono::duration<Rep, Period>& duration)
+        template<class rep, class period>
+        static bool is_elapsed(time_point start, const std::chrono::duration<rep, period>& duration)
         {
             return (start + duration) < now();
         }
