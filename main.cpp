@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <array>
+#include <memory>
 #include <cmath>
 
 #include <cmsis/arm_math.h>
@@ -59,6 +60,15 @@ int main(void)
     auto led_blink_start = hal::system::clock::now();
     led->set(led_state);
 
+    /* IIR filter init (for A-weighting) */
+    arm_biquad_casd_df1_inst_f32 iir;
+    const uint32_t stages = 3;
+    const float32_t coeffs[5 * stages] = {2.8148e-01, -5.6291e-01, 2.8144e-01, 4.3181e-02, -4.6615e-04,
+                                          1.0000e+00, -2.0001e+00, 1.0001e+00, 1.9935e+00, -9.9355e-01,
+                                          1.0000e+00,  2.0000e+00, 1.0000e+00, 1.8737e+00, -8.7551e-01};
+    float32_t state[4 * stages] = {0};
+    arm_biquad_cascade_df1_init_f32(&iir, stages, coeffs, state);
+
     while (true)
     {
         if (hal::system::clock::is_elapsed(led_blink_start, std::chrono::milliseconds(500)))
@@ -72,14 +82,14 @@ int main(void)
             float32_t *dsp_buffer = const_cast<float32_t*>(dsp_samples_buffer.data());
             uint32_t data_len = dsp_samples_buffer.size();
 
-            /* Delete offset */
-            float32_t mean;
-            arm_mean_f32(dsp_buffer, data_len, &mean);
-            arm_offset_f32(dsp_buffer, -mean, dsp_buffer, data_len);
+            /* Apply A-weighting filter */
+            auto dsp_buffer_filtered = std::make_unique<float32_t[]>(data_len);
+            if (dsp_buffer_filtered != nullptr)
+                arm_biquad_cascade_df1_f32(&iir, dsp_buffer, dsp_buffer_filtered.get(), data_len);
 
             /* Calculate RMS value */
             float32_t rms;
-            arm_rms_f32(dsp_buffer, data_len, &rms);
+            arm_rms_f32(dsp_buffer_filtered.get(), data_len, &rms);
 
             /* Normalize RMS value */
             rms /= INT16_MAX;
@@ -96,11 +106,11 @@ int main(void)
 
                 /* Write to LCD */
                 uint8_t padding = db_spl / 100 ? 0 : db_spl / 10 ? 1 : 2;
-                const std::string lcd_str = "dBZ:" + std::string(padding, ' ') + std::to_string(db_spl);
+                const std::string lcd_str = "dBA:" + std::string(padding, ' ') + std::to_string(db_spl);
                 lcd->write(lcd_str);
 
                 /* Write to STD output */
-                std::cout << "dBZ: " << db_spl_sum / sum_cnt << std::endl;
+                std::cout << "dBA: " << db_spl_sum / sum_cnt << std::endl;
 
                 sum_cnt = 0;
                 db_spl_sum = 0;
