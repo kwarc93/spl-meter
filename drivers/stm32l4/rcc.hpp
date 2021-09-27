@@ -71,11 +71,26 @@ public:
         HSE,
     };
 
-    /** @brief RCC peripheral definition. Initialize this object with @ref RCC_PERIPH_BUS. */
+    /** @warning Initialize this object with @ref RCC_PERIPH_BUS() macro. */
     struct periph_bus
     {
         rcc::bus bus;
         uint32_t periph;
+    };
+
+    struct bus_presc
+    {
+        uint32_t ahb;       /**< AHB prescaler, use RCC_CFGR_HPRE_DIVx from CMSIS headers */
+        uint32_t apb1;      /**< APB1 prescaler, use RCC_CFGR_PPRE1_DIVx from CMSIS headers */
+        uint32_t apb2;      /**< APB1 prescaler, use RCC_CFGR_PPRE2_DIVx from CMSIS headers */
+    };
+
+    struct main_pll
+    {
+        uint32_t source;    /**< Clock source, use RCC_PLLCFGR_PLLSRC_HSx from CMSIS headers */
+        uint32_t m;         /**< M divider, allowed range: 2 - 63 */
+        uint32_t n;         /**< N multiplier, allowed range: 50 - 432 */
+        uint32_t r;         /**< R divider, allowed range: 2, 4, 6, 8 */
     };
 
 //--------------------------------------------------------------------------------
@@ -97,6 +112,8 @@ public:
     static void toggle_periph_clock(const periph_bus &pbus, bool state);
 
     static void set_msi(msi_clock clock);
+
+    static void set_main_pll(const struct main_pll &pll, const struct bus_presc &presc);
 
     /** @brief  Gets actual system clock frequency.
      *  @param  None

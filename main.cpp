@@ -82,6 +82,11 @@ int main(void)
             float32_t *dsp_buffer = const_cast<float32_t*>(dsp_samples_buffer.data());
             uint32_t data_len = dsp_samples_buffer.size();
 
+            /* Delete offset */
+            float32_t mean;
+            arm_mean_f32(dsp_buffer, data_len, &mean);
+            arm_offset_f32(dsp_buffer, -mean, dsp_buffer, data_len);
+
             /* Apply A-weighting filter */
             auto dsp_buffer_filtered = std::make_unique<float32_t[]>(data_len);
             if (dsp_buffer_filtered != nullptr)
@@ -97,23 +102,23 @@ int main(void)
             /* Calculate DB SPL */
             static uint32_t sum_cnt = 0;
             static float32_t db_spl_sum = 0;
-            db_spl_sum += microphone->get_aop() + 20.0f * log10f(rms) + 3.0f;
+            const float32_t sqrt2 = 1.41421356237309504880;
+            db_spl_sum += 94 - microphone->get_sensitivity() + 20.0f * log10f(rms * sqrt2);
             sum_cnt++;
 
             if (sum_cnt >= 4)
             {
                 uint32_t db_spl = db_spl_sum / sum_cnt;
+                sum_cnt = 0;
+                db_spl_sum = 0;
 
                 /* Write to LCD */
                 uint8_t padding = db_spl / 100 ? 0 : db_spl / 10 ? 1 : 2;
-                const std::string lcd_str = "dBA:" + std::string(padding, ' ') + std::to_string(db_spl);
-                lcd->write(lcd_str);
+                const std::string_view db_spl_str = "A:" + std::string(padding, ' ') + std::to_string(db_spl) + "dB";
+                lcd->write(db_spl_str);
 
                 /* Write to STD output */
-                std::cout << "dBA: " << db_spl_sum / sum_cnt << std::endl;
-
-                sum_cnt = 0;
-                db_spl_sum = 0;
+                std::cout << db_spl_str << std::endl;
             }
 
             data_ready = false;

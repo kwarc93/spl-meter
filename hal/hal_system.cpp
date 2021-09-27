@@ -31,7 +31,25 @@ void system::init(void)
     drivers::core::enable_cycles_counter();
     drivers::flash::set_wait_states(system::system_clock);
 
+//    const drivers::rcc::bus_presc presc_cfg =
+//    {
+//        RCC_CFGR_HPRE_DIV1,
+//        RCC_CFGR_PPRE1_DIV1,
+//        RCC_CFGR_PPRE2_DIV1,
+//    };
+//
+//    const drivers::rcc::main_pll pll_cfg =
+//    {
+//        RCC_PLLCFGR_PLLSRC_HSE,
+//        1,
+//        12,
+//        2
+//    };
+//
+//    drivers::rcc::set_main_pll(pll_cfg, presc_cfg);
+
     drivers::rcc::set_msi(drivers::rcc::msi_clock::CLK_48MHZ);
+
     drivers::rcc::toggle_periph_clock({drivers::rcc::bus::APB1, RCC_APB1ENR1_PWREN}, true);
 
     /* Set System Tick interrupt */

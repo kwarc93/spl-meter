@@ -143,7 +143,7 @@ lcd_gh08172::lcd_gh08172()
     drivers::lcd::clear();
 }
 
-bool lcd_gh08172::write(const std::string &s)
+bool lcd_gh08172::write(const std::string_view &s)
 {
     uint8_t position = 0;
     for (std::size_t i = 0; i < s.length(); i++)

@@ -71,16 +71,6 @@ void mic_mp34dt01::set_gain(float gain)
     /* TODO */
 }
 
-uint32_t mic_mp34dt01::get_snr(void)
-{
-    return this->snr;
-}
-
-uint32_t mic_mp34dt01::get_aop(void)
-{
-    return this->aop;
-}
-
 int32_t mic_mp34dt01::get_sensitivity(void)
 {
     return this->sensitivity;

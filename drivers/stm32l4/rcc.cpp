@@ -174,6 +174,47 @@ void rcc::set_msi(msi_clock clock)
 
 //-----------------------------------------------------------------------------
 
+void rcc::set_main_pll(const struct main_pll &pll, const struct bus_presc &presc)
+{
+    /* Enable selected clock source */
+    if (pll.source == RCC_PLLCFGR_PLLSRC_HSE)
+        toggle_hse(true);
+    else
+        toggle_hsi(true);
+
+    /* Set prescalers for HCLK, PCLK1 & PCLK2 */
+    RCC->CFGR |= presc.ahb | presc.apb1 | presc.apb2;
+
+    /* Configure the main PLL */
+    RCC->PLLCFGR = pll.source | (pll.m << 4) | (pll.n << 8) | (pll.r << 25);
+    RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN;
+
+    /* Enable the main PLL */
+    RCC->CR |= RCC_CR_PLLON;
+
+    while ((RCC->CR & RCC_CR_PLLRDY) == 0)
+    {
+        /* Wait untill the main PLL is ready */
+    }
+
+    /* Select the main PLL as system clock source */
+    RCC->CFGR &= ~RCC_CFGR_SW;
+    RCC->CFGR |= RCC_CFGR_SW_PLL;
+
+    while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL)
+    {
+        /* Wait untill the main PLL is used as system clock source */
+    }
+
+    /* Disable unused clock source */
+    if (pll.source == RCC_PLLCFGR_PLLSRC_HSE)
+        toggle_hsi(false);
+    else
+        toggle_hse(false);
+}
+
+//-----------------------------------------------------------------------------
+
 uint32_t rcc::get_sysclk_freq(void)
 {
     uint32_t sysclockfreq = 0U;

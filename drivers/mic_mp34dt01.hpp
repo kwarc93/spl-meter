@@ -23,8 +23,6 @@ namespace drivers
         void enable(void);
         void disable(void);
         void set_gain(float gain);
-        uint32_t get_snr(void);
-        uint32_t get_aop(void);
         int32_t get_sensitivity(void);
         uint32_t get_sampling_frequency(void);
 

@@ -56,6 +56,7 @@
 									<listOptionValue builtIn="false" value="__STACK_SIZE=0x00000800"/>
 									<listOptionValue builtIn="false" value="__HEAP_SIZE=0x00008000"/>
 									<listOptionValue builtIn="false" value="STM32L476xx"/>
+									<listOptionValue builtIn="false" value="_USE_MATH_DEFINES"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1881947647" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/spl-meter}&quot;"/>
@@ -68,6 +69,7 @@
 									<listOptionValue builtIn="false" value="__STACK_SIZE=0x00000800"/>
 									<listOptionValue builtIn="false" value="__HEAP_SIZE=0x00008000"/>
 									<listOptionValue builtIn="false" value="STM32L476xx"/>
+									<listOptionValue builtIn="false" value="_USE_MATH_DEFINES"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1586454513" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/spl-meter}&quot;"/>
@@ -83,6 +85,7 @@
 									<listOptionValue builtIn="false" value="__STACK_SIZE=0x00000800"/>
 									<listOptionValue builtIn="false" value="__HEAP_SIZE=0x00008000"/>
 									<listOptionValue builtIn="false" value="STM32L476xx"/>
+									<listOptionValue builtIn="false" value="_USE_MATH_DEFINES"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1632310875" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/spl-meter}&quot;"/>
