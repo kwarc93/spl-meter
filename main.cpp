@@ -28,7 +28,7 @@ void mic_data_ready(const int16_t *data, uint16_t data_len)
     if (data_ready)
     {
         /* Overrun !*/
-        asm volatile ("BKPT 0");
+//        asm volatile ("BKPT 0");
     }
 
     /* Copy integer values to DSP buffer */
@@ -82,19 +82,22 @@ int main(void)
             float32_t *dsp_buffer = const_cast<float32_t*>(dsp_samples_buffer.data());
             uint32_t data_len = dsp_samples_buffer.size();
 
+            /* Apply A-weighting filter */
+            auto dsp_buffer_filtered = std::make_unique<float32_t[]>(data_len);
+            if (dsp_buffer_filtered != nullptr)
+            {
+                arm_biquad_cascade_df1_f32(&iir, dsp_buffer, dsp_buffer_filtered.get(), data_len);
+                dsp_buffer = dsp_buffer_filtered.get();
+            }
+
             /* Delete offset */
             float32_t mean;
             arm_mean_f32(dsp_buffer, data_len, &mean);
             arm_offset_f32(dsp_buffer, -mean, dsp_buffer, data_len);
 
-            /* Apply A-weighting filter */
-            auto dsp_buffer_filtered = std::make_unique<float32_t[]>(data_len);
-            if (dsp_buffer_filtered != nullptr)
-                arm_biquad_cascade_df1_f32(&iir, dsp_buffer, dsp_buffer_filtered.get(), data_len);
-
             /* Calculate RMS value */
             float32_t rms;
-            arm_rms_f32(dsp_buffer_filtered.get(), data_len, &rms);
+            arm_rms_f32(dsp_buffer, data_len, &rms);
 
             /* Normalize RMS value */
             rms /= INT16_MAX;
