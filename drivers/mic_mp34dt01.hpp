@@ -19,7 +19,7 @@ namespace drivers
     public:
         mic_mp34dt01(drivers::dfsdm::channel::id ch, drivers::dfsdm::filter::id f);
 
-        void init(hal::interface::microphone::data_ready_callback_t data_ready);
+        void init(const hal::interface::microphone::data_ready_cb_t &data_ready_cb);
         void enable(void);
         void disable(void);
         void set_gain(float gain);

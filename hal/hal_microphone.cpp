@@ -11,7 +11,7 @@ using namespace hal;
 
 //-----------------------------------------------------------------------------
 
-microphone::microphone(interface::microphone *interface)
+microphone::microphone(hal::interface::microphone *interface)
 {
     this->interface = interface;
 }
@@ -21,9 +21,9 @@ microphone::~microphone()
 
 }
 
-bool microphone::init(hal::interface::microphone::data_ready_callback_t data_ready_callback)
+bool microphone::init(const hal::interface::microphone::data_ready_cb_t &data_ready_cb)
 {
-    this->interface->init(data_ready_callback);
+    this->interface->init(data_ready_cb);
     return true;
 }
 

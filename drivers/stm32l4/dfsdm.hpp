@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstddef>
 
+#include <functional>
 
 namespace drivers
 {
@@ -22,7 +23,7 @@ class dfsdm final
 public:
     dfsdm() = delete;
 
-    typedef void (*data_ready_callback_t)(const int16_t *data, uint16_t data_len);
+    typedef std::function<void(const int16_t *data, uint16_t data_len)> data_ready_cb_t;
 
     enum class clk_out_src
     {
@@ -81,7 +82,7 @@ public:
         };
 
         static void enable(id f, bool state);
-        static void enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb);
+        static void enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, const data_ready_cb_t &data_ready_cb);
         static void configure(id f, order ord, uint16_t decim, uint8_t avg, bool continous_mode = true, bool fast_mode = true, bool sync_with_f0 = false);
         static void link_channel(id f, channel::id ch);
         static void trigger(id f);
@@ -98,7 +99,7 @@ private:
     {
         int16_t *buffer;
         uint16_t buffer_len;
-        data_ready_callback_t ready_callback;
+        data_ready_cb_t ready_callback;
     };
 
     inline static output_data output_data[4] = {0};

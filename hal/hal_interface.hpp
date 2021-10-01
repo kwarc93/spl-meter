@@ -11,6 +11,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <functional>
+
+/* Interfaces for low-level drivers */
+
 namespace hal::interface
 {
     class serial
@@ -40,10 +44,10 @@ namespace hal::interface
     class microphone
     {
     public:
-        typedef void (*data_ready_callback_t)(const int16_t *data, uint16_t data_len);
+        typedef std::function<void(const int16_t *data, uint16_t data_len)> data_ready_cb_t;
 
         virtual ~microphone() {};
-        virtual void init(data_ready_callback_t data_ready) = 0;
+        virtual void init(const data_ready_cb_t &data_ready_cb) = 0;
         virtual void enable(void) = 0;
         virtual void disable(void) = 0;
         virtual void set_gain(float gain) = 0;

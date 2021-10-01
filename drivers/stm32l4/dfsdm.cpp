@@ -202,7 +202,7 @@ void dfsdm::filter::enable(id f, bool state)
         filter->FLTCR1 &= ~DFSDM_FLTCR1_DFEN;
 }
 
-void dfsdm::filter::enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, data_ready_callback_t data_ready_cb)
+void dfsdm::filter::enable_dma(id f, int16_t *data_buffer, uint16_t data_buffer_len, const data_ready_cb_t &data_ready_cb)
 {
     const uint8_t filter_id = static_cast<uint8_t>(f);
 

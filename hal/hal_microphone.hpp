@@ -22,7 +22,7 @@ namespace hal
     public:
         microphone(hal::interface::microphone *interface);
         virtual ~microphone();
-        bool init(hal::interface::microphone::data_ready_callback_t data_ready_callback);
+        bool init(const hal::interface::microphone::data_ready_cb_t &data_ready_cb);
         void enable(void);
         void disable(void);
         void set_gain(float gain);
