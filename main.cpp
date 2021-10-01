@@ -16,9 +16,9 @@
 #include <hal/hal_system.hpp>
 #include <hal/hal_delay.hpp>
 #include <hal/hal_led.hpp>
+#include <hal/hal_microphone.hpp>
 
 #include <drivers/lcd_gh08172.hpp>
-#include <drivers/mic_mp34dt01.hpp>
 
 static std::array<volatile float32_t, 2048> dsp_samples_buffer;
 static volatile bool data_ready = false;
@@ -48,7 +48,7 @@ int main(void)
     auto lcd = new drivers::lcd_gh08172();
 
     /* Digital microphone driver test*/
-    auto microphone = new drivers::mic_mp34dt01(drivers::dfsdm::channel::id::ch2, drivers::dfsdm::filter::id::f0);
+    auto microphone = new hal::microphones::digital_mic();
     microphone->init(mic_data_ready);
     microphone->enable();
 
@@ -105,13 +105,12 @@ int main(void)
             /* Calculate DB SPL */
             static uint32_t sum_cnt = 0;
             static float32_t db_spl_sum = 0;
-            const float32_t sqrt2 = 1.41421356237309504880;
-            db_spl_sum += 94 - microphone->get_sensitivity() + 20.0f * log10f(rms * sqrt2);
+            db_spl_sum += 94 - microphone->get_sensitivity() + 20.0f * log10f(rms);
             sum_cnt++;
 
             if (sum_cnt >= 4)
             {
-                uint32_t db_spl = db_spl_sum / sum_cnt;
+                uint32_t db_spl = lround(db_spl_sum / sum_cnt);
                 sum_cnt = 0;
                 db_spl_sum = 0;
 
