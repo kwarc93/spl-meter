@@ -43,20 +43,26 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 
 meter::meter(hal::microphone &microphone, new_data_cb_t new_data_cb) : mic {microphone}
 {
-    this->new_spl_data_cb = new_data_cb;
-    this->weighting_filter = new a_weighting();
-
-    this->dsp_buffer = std::vector<float32_t>(2048);
+    this->dsp_buffer = std::vector<float32_t>(this->mic_samples / 2);
     this->dsp_buffer_ready = false;
 
-    this->mic_data_buffer = std::vector<int16_t>(4096);
+    this->mic_data_buffer = std::vector<int16_t>(this->mic_samples);
     this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
+
+    this->new_spl_data_cb = new_data_cb;
+    this->spl_data_period = static_cast<float32_t>(this->dsp_buffer.size()) / this->mic.get_sampling_frequency();
+
+    this->weighting_filter = new a_weighting();
+    this->averaging_filter = new slow_averaging_filter(this->spl_data_period);
+    this->averaging_time_point = hal::system::clock::time_point();
+
     this->mic.enable();
 }
 
 meter::~meter()
 {
     delete this->weighting_filter;
+    delete this->averaging_filter;
 }
 
 void meter::process(void)
@@ -83,16 +89,15 @@ void meter::process(void)
         rms /= INT16_MAX;
 
         /* Calculate dB SPL */
-        static uint32_t sum_cnt = 0;
-        static float32_t db_spl_sum = 0;
-        db_spl_sum += 94 - this->mic.get_sensitivity() + 20.0f * log10f(rms);
-        sum_cnt++;
+        float32_t db_spl_raw = 94 - this->mic.get_sensitivity() + 20.0f * log10f(rms);
 
-        if (sum_cnt >= 4)
+        /* Apply averaging */
+        float32_t db_spl = this->averaging_filter->process(db_spl_raw);
+
+        uint32_t averaging_period = this->averaging_filter->time_constant * 1000;
+        if (hal::system::clock::is_elapsed(this->averaging_time_point, std::chrono::milliseconds(averaging_period)))
         {
-            float32_t db_spl = db_spl_sum / sum_cnt;
-            sum_cnt = 0;
-            db_spl_sum = 0;
+            this->averaging_time_point = hal::system::clock::now();
 
             this->spl_data.db_max = std::max(db_spl, this->spl_data.db_max);
             this->spl_data.db_max = std::min(db_spl, this->spl_data.db_min);
@@ -103,6 +108,7 @@ void meter::process(void)
         }
     }
 }
+
 const meter::data & meter::get_data(void)
 {
     return this->spl_data;
@@ -125,6 +131,24 @@ void meter::set_weighting(weighting weighting)
             break;
         default:
             this->weighting_filter = nullptr;
+            break;
+    }
+}
+
+void meter::set_averaging(averaging averaging)
+{
+    delete this->averaging_filter;
+
+    switch (averaging)
+    {
+        case averaging::fast:
+            this->averaging_filter = new fast_averaging_filter(this->spl_data_period);
+            break;
+        case averaging::slow:
+            this->averaging_filter = new slow_averaging_filter(this->spl_data_period);
+            break;
+        default:
+            this->averaging_filter = nullptr;
             break;
     }
 }
