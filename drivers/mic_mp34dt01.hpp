@@ -19,7 +19,7 @@ namespace drivers
     public:
         mic_mp34dt01(drivers::dfsdm::channel::id ch, drivers::dfsdm::filter::id f);
 
-        void init(const hal::interface::microphone::data_ready_cb_t &data_ready_cb);
+        void init(std::vector<int16_t> &data_buffer, const hal::interface::microphone::data_ready_cb_t &data_ready_cb);
         void enable(void);
         void disable(void);
         void set_gain(float gain);
@@ -34,7 +34,6 @@ namespace drivers
         const drivers::dfsdm::channel::id channel;
         drivers::dfsdm::filter::id filter;
         uint32_t sampling_frequency;
-        volatile int16_t samples[4096];
     };
 }
 

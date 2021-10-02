@@ -21,9 +21,9 @@ microphone::~microphone()
 
 }
 
-bool microphone::init(const hal::interface::microphone::data_ready_cb_t &data_ready_cb)
+bool microphone::init(std::vector<int16_t> &data_buffer, const hal::interface::microphone::data_ready_cb_t &data_ready_cb)
 {
-    this->interface->init(data_ready_cb);
+    this->interface->init(data_buffer, data_ready_cb);
     return true;
 }
 

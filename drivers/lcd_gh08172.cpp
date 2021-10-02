@@ -19,7 +19,7 @@ using namespace drivers;
 //-----------------------------------------------------------------------------
 /* private */
 
-const std::map<const char, uint16_t> lcd_gh08172::character_map =
+const std::unordered_map<char, uint16_t> lcd_gh08172::character_map =
 {
     /* Capital letters */
     {'A', 0xFE00},

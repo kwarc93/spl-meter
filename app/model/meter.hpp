@@ -46,8 +46,9 @@ private:
     data spl_data;
     new_data_cb_t new_spl_data_cb;
 
-    hal::microphone &microphone;
-    void microphone_data_ready(const int16_t *data, uint16_t data_len);
+    hal::microphone &mic;
+    std::vector<int16_t> mic_data_buffer;
+    void mic_data_ready(const int16_t *data, uint16_t data_len);
 
     spl::weighting_filter *weighting_filter;
 

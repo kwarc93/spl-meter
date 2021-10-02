@@ -17,7 +17,7 @@ using namespace spl;
 //---------------------------------------------------------------------------
 /* private */
 
-void meter::microphone_data_ready(const int16_t *data, uint16_t data_len)
+void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 {
     if (this->dsp_buffer_ready)
     {
@@ -26,7 +26,10 @@ void meter::microphone_data_ready(const int16_t *data, uint16_t data_len)
     }
 
     if (this->dsp_buffer.size() != data_len)
-        this->dsp_buffer.resize(data_len);
+    {
+        /* Error !*/
+        asm volatile ("BKPT 0");
+    }
 
     /* Copy integer values to DSP buffer */
     for (uint32_t i = 0; i < data_len; i++)
@@ -38,14 +41,17 @@ void meter::microphone_data_ready(const int16_t *data, uint16_t data_len)
 //---------------------------------------------------------------------------
 /* public */
 
-meter::meter(hal::microphone &microphone, new_data_cb_t new_data_cb) : microphone {microphone}
+meter::meter(hal::microphone &microphone, new_data_cb_t new_data_cb) : mic {microphone}
 {
-    this->dsp_buffer_ready = false;
-    this->weighting_filter = new a_weighting();
     this->new_spl_data_cb = new_data_cb;
+    this->weighting_filter = new a_weighting();
 
-    this->microphone.init(std::bind(&meter::microphone_data_ready, this, std::placeholders::_1, std::placeholders::_2));
-    this->microphone.enable();
+    this->dsp_buffer = std::vector<float32_t>(2048);
+    this->dsp_buffer_ready = false;
+
+    this->mic_data_buffer = std::vector<int16_t>(4096);
+    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
+    this->mic.enable();
 }
 
 meter::~meter()
@@ -62,6 +68,8 @@ void meter::process(void)
         if (dsp_buffer_filtered != nullptr)
             this->weighting_filter->process(this->dsp_buffer, *dsp_buffer_filtered);
 
+        this->dsp_buffer_ready = false;
+
         /* Delete offset */
         float32_t mean;
         arm_mean_f32(dsp_buffer_filtered->data(), dsp_buffer_filtered->size(), &mean);
@@ -77,7 +85,7 @@ void meter::process(void)
         /* Calculate dB SPL */
         static uint32_t sum_cnt = 0;
         static float32_t db_spl_sum = 0;
-        db_spl_sum += 94 - this->microphone.get_sensitivity() + 20.0f * log10f(rms);
+        db_spl_sum += 94 - this->mic.get_sensitivity() + 20.0f * log10f(rms);
         sum_cnt++;
 
         if (sum_cnt >= 4)
@@ -93,8 +101,6 @@ void meter::process(void)
             if (this->new_spl_data_cb != nullptr)
                 this->new_spl_data_cb(this->spl_data);
         }
-
-        this->dsp_buffer_ready = false;
     }
 }
 const meter::data & meter::get_data(void)
@@ -121,5 +127,4 @@ void meter::set_weighting(weighting weighting)
             this->weighting_filter = nullptr;
             break;
     }
-
 }

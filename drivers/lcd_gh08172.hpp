@@ -9,7 +9,7 @@
 #define LCD_GH08172_HPP_
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 /**
   @verbatim
@@ -78,7 +78,7 @@ private:
     const uint8_t positions = 6;    /* Number of LCD positions */
     const uint8_t bars = 4;         /* Number of bar segments */
 
-    static const std::map<const char, uint16_t> character_map;
+    static const std::unordered_map<char, uint16_t> character_map;
 
     void set_character(uint16_t value, uint8_t position);
     void set_bar(bool value, uint8_t bar);

@@ -12,6 +12,7 @@
 #include <cstdint>
 
 #include <functional>
+#include <vector>
 
 /* Interfaces for low-level drivers */
 
@@ -47,7 +48,7 @@ namespace hal::interface
         typedef std::function<void(const int16_t *data, uint16_t data_len)> data_ready_cb_t;
 
         virtual ~microphone() {};
-        virtual void init(const data_ready_cb_t &data_ready_cb) = 0;
+        virtual void init(std::vector<int16_t> &data_buffer, const data_ready_cb_t &data_ready_cb) = 0;
         virtual void enable(void) = 0;
         virtual void disable(void) = 0;
         virtual void set_gain(float gain) = 0;

@@ -37,11 +37,11 @@ int main(void)
 
     std::cout << "System started" << std::endl;
 
-    auto lcd = drivers::lcd_gh08172();
     auto led = hal::leds::debug();
     bool led_state = true;
     led.set(led_state);
 
+    auto lcd = drivers::lcd_gh08172();
     auto microphone = hal::microphones::digital_mic();
     auto spl_meter = spl::meter(microphone, spl_meter_new_data_callback);
 
