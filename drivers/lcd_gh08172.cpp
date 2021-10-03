@@ -89,12 +89,12 @@ void lcd_gh08172::set_character(uint16_t value, uint8_t position)
     for (auto &com : hal::lcd::com_map)
     {
         /* Clear */
-        drivers::lcd::ram[com] &= ~(((uint64_t)1 << hal::lcd::segment_map[2 * position]) |
+        lcd::ram[com] &= ~(((uint64_t)1 << hal::lcd::segment_map[2 * position]) |
                                    ((uint64_t)1 << hal::lcd::segment_map[2 * position + 1]) |
                                    ((uint64_t)1 << hal::lcd::segment_map[23 - 2 * position - 1]) |
                                    ((uint64_t)1 << hal::lcd::segment_map[23 - 2 * position]));
         /* Set */
-        drivers::lcd::ram[com] |= ((uint64_t)!!(value & (1 << 12)) << hal::lcd::segment_map[2 * position]) |
+        lcd::ram[com] |= ((uint64_t)!!(value & (1 << 12)) << hal::lcd::segment_map[2 * position]) |
                                   ((uint64_t)!!(value & (1 << 13)) << hal::lcd::segment_map[2 * position + 1]) |
                                   ((uint64_t)!!(value & (1 << 14)) << hal::lcd::segment_map[23 - 2 * position - 1]) |
                                   ((uint64_t)!!(value & (1 << 15)) << hal::lcd::segment_map[23 - 2 * position]);
@@ -107,20 +107,10 @@ void lcd_gh08172::set_bar(bool value, uint8_t bar)
     if (bar >= this->bars)
         return;
 
-    constexpr std::array<std::pair<hal::lcd::com, hal::lcd::segment>, 4> bar_map =
-    {
-        {
-            {hal::lcd::com::COM3, hal::lcd::segment::SEG11},
-            {hal::lcd::com::COM2, hal::lcd::segment::SEG11},
-            {hal::lcd::com::COM3, hal::lcd::segment::SEG9},
-            {hal::lcd::com::COM2, hal::lcd::segment::SEG9}
-        }
-    };
-
     if (value)
-        drivers::lcd::ram[hal::lcd::com_map[bar_map[bar].first]] |= ((uint64_t)value << hal::lcd::segment_map[bar_map[bar].second]);
+        lcd::ram[hal::lcd::com_map[hal::lcd::bar_map[bar].first]] |= ((uint64_t)value << hal::lcd::segment_map[hal::lcd::bar_map[bar].second]);
     else
-        drivers::lcd::ram[hal::lcd::com_map[bar_map[bar].first]] &= ~((uint64_t)value << hal::lcd::segment_map[bar_map[bar].second]);
+        lcd::ram[hal::lcd::com_map[hal::lcd::bar_map[bar].first]] &= ~((uint64_t)value << hal::lcd::segment_map[hal::lcd::bar_map[bar].second]);
 }
 
 //-----------------------------------------------------------------------------
@@ -132,15 +122,23 @@ lcd_gh08172::lcd_gh08172()
     for (const auto &pin : hal::lcd::gpio)
         gpio::configure(pin, gpio::mode::af, gpio::af::af11);
 
-    drivers::lcd::init();
+    lcd::init();
 
     /* Test all segments */
     for (uint8_t idx = 0; idx < 8; idx++)
-        drivers::lcd::ram[idx] = 0xffffffffffffffff;
+        lcd::ram[idx] = 0xffffffffffffffff;
 
-    drivers::lcd::update();
-    drivers::delay::ms(1000);
-    drivers::lcd::clear();
+    lcd::update();
+    delay::ms(1000);
+    lcd::clear();
+}
+
+lcd_gh08172::~lcd_gh08172()
+{
+    lcd::deinit();
+
+    for (const auto &pin : hal::lcd::gpio)
+        gpio::configure(pin, gpio::mode::analog);
 }
 
 bool lcd_gh08172::write(const std::string_view &s)
@@ -173,6 +171,6 @@ bool lcd_gh08172::write(const std::string_view &s)
         this->set_character(lcd_char, position++);
     }
 
-    drivers::lcd::update();
+    lcd::update();
     return position < this->positions;
 }

@@ -17,6 +17,7 @@ using namespace spl;
 //---------------------------------------------------------------------------
 /* private */
 
+/* warning: This function is called from ISR */
 void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 {
     if (this->dsp_buffer_ready)
@@ -41,7 +42,7 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 //---------------------------------------------------------------------------
 /* public */
 
-meter::meter(hal::microphone &microphone, new_data_cb_t new_data_cb) : mic {microphone}
+meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mic {microphone}
 {
     this->dsp_buffer = std::vector<float32_t>(this->mic_samples / 2);
     this->dsp_buffer_ready = false;
@@ -49,11 +50,13 @@ meter::meter(hal::microphone &microphone, new_data_cb_t new_data_cb) : mic {micr
     this->mic_data_buffer = std::vector<int16_t>(this->mic_samples);
     this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
 
+    this->spl_data = {};
     this->new_spl_data_cb = new_data_cb;
     this->spl_data_period = static_cast<float32_t>(this->dsp_buffer.size()) / this->mic.get_sampling_frequency();
 
+    this->spl_data.weighting = weighting::A;
     this->weighting_filter = new a_weighting();
-    this->averaging_filter = new slow_averaging_filter(this->spl_data_period);
+    this->averaging_filter = new slow_averaging(this->spl_data_period);
     this->averaging_time_point = hal::system::clock::time_point();
 
     this->mic.enable();
@@ -99,9 +102,9 @@ void meter::process(void)
         {
             this->averaging_time_point = hal::system::clock::now();
 
-            this->spl_data.db_max = std::max(db_spl, this->spl_data.db_max);
-            this->spl_data.db_max = std::min(db_spl, this->spl_data.db_min);
-            this->spl_data.db = db_spl;
+            this->spl_data.spl_max = std::max(db_spl, this->spl_data.spl_max);
+            this->spl_data.spl_min = std::min(db_spl, this->spl_data.spl_min);
+            this->spl_data.spl = db_spl;
 
             if (this->new_spl_data_cb != nullptr)
                 this->new_spl_data_cb(this->spl_data);
@@ -114,41 +117,52 @@ const meter::data & meter::get_data(void)
     return this->spl_data;
 }
 
+void meter::reset_data(void)
+{
+    this->spl_data = {};
+}
+
 void meter::set_weighting(weighting weighting)
 {
-    delete this->weighting_filter;
-
     switch (weighting)
     {
         case weighting::A:
+            this->reset_data();
+            delete this->weighting_filter;
             this->weighting_filter = new a_weighting();
             break;
         case weighting::C:
+            this->reset_data();
+            delete this->weighting_filter;
             this->weighting_filter = new c_weighting();
             break;
         case weighting::Z:
+            this->reset_data();
+            delete this->weighting_filter;
             this->weighting_filter = new z_weighting();
             break;
         default:
-            this->weighting_filter = nullptr;
             break;
     }
+
+    this->spl_data.weighting = weighting;
 }
 
 void meter::set_averaging(averaging averaging)
 {
-    delete this->averaging_filter;
-
     switch (averaging)
     {
         case averaging::fast:
-            this->averaging_filter = new fast_averaging_filter(this->spl_data_period);
+            this->reset_data();
+            delete this->averaging_filter;
+            this->averaging_filter = new fast_averaging(this->spl_data_period);
             break;
         case averaging::slow:
-            this->averaging_filter = new slow_averaging_filter(this->spl_data_period);
+            this->reset_data();
+            delete this->averaging_filter;
+            this->averaging_filter = new slow_averaging(this->spl_data_period);
             break;
         default:
-            this->averaging_filter = nullptr;
             break;
     }
 }

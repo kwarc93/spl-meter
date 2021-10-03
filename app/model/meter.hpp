@@ -37,18 +37,20 @@ public:
 
     struct data
     {
-        float32_t db;
-        float32_t db_max;
-        float32_t db_min;
+        float32_t spl;
+        float32_t spl_max;
+        float32_t spl_min;
+        meter::weighting weighting;
     };
 
     typedef std::function<void(const data &spl_data)> new_data_cb_t;
 public:
-    meter(hal::microphone &microphone, new_data_cb_t new_data_cb);
+    meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb);
     ~meter();
 
     void process(void);
     const data &get_data(void);
+    void reset_data(void);
     void set_weighting(weighting weighting);
     void set_averaging(averaging averaging);
 private:

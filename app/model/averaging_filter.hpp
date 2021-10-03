@@ -29,16 +29,16 @@ private:
     float32_t output;
 };
 
-class fast_averaging_filter : public averaging_filter
+class fast_averaging : public averaging_filter
 {
 public:
-    fast_averaging_filter(float32_t dt) : averaging_filter(0.125f, dt) {};
+    fast_averaging(float32_t dt) : averaging_filter(0.125f, dt) {};
 };
 
-class slow_averaging_filter : public averaging_filter
+class slow_averaging : public averaging_filter
 {
 public:
-    slow_averaging_filter(float32_t dt) : averaging_filter(1.0f, dt) {};
+    slow_averaging(float32_t dt) : averaging_filter(1.0f, dt) {};
 };
 
 //---------------------------------------------------------------------------

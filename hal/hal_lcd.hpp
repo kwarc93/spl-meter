@@ -9,6 +9,7 @@
 #define HAL_LCD_HPP_
 
 #include <drivers/stm32l4/gpio.hpp>
+#include <drivers/lcd_gh08172.hpp>
 
 #include <array>
 
@@ -35,6 +36,16 @@ namespace hal::lcd
       4, 23, 6, 13, 15, 29, 31, 33,
       35, 25, 17, 8, 9, 26, 24, 34,
       32, 30, 28, 14, 12, 5, 22, 3
+    };
+
+    constexpr std::array<std::pair<hal::lcd::com, hal::lcd::segment>, 4> bar_map =
+    {
+        {
+            {hal::lcd::com::COM3, hal::lcd::segment::SEG11},
+            {hal::lcd::com::COM2, hal::lcd::segment::SEG11},
+            {hal::lcd::com::COM3, hal::lcd::segment::SEG9},
+            {hal::lcd::com::COM2, hal::lcd::segment::SEG9}
+        }
     };
 
     constexpr std::array<const drivers::gpio::io, 29> gpio =
@@ -72,6 +83,16 @@ namespace hal::lcd
         {drivers::gpio::port::portd, drivers::gpio::pin::pin14},
         {drivers::gpio::port::portd, drivers::gpio::pin::pin15},
     }};
+
+    class lcd_6x14
+    {
+    public:
+        lcd_6x14();
+        ~lcd_6x14();
+        bool write(const std::string_view &s);
+    private:
+        drivers::lcd_gh08172 drv;
+    };
 }
 
 #endif /* HAL_LCD_HPP_ */
