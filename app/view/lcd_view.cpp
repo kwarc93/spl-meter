@@ -33,7 +33,7 @@ void lcd_view::update_lcd(void)
     switch (this->curent_view)
     {
         case view::spl:
-            s = std::string(1, this->current_data.weighting) + ":" + to_aligned_string(lround(this->current_data.spl)) + "dB";
+            s = "dB" + std::string(1, this->current_data.weighting) + ":" + to_aligned_string(lround(this->current_data.spl));
             break;
         case view::max_spl:
             s = "MAX:" + to_aligned_string(lround(this->current_data.max_spl));

@@ -16,10 +16,8 @@ using namespace drivers;
 //-----------------------------------------------------------------------------
 /* public */
 
-led_gpio::led_gpio(gpio::io io)
+led_gpio::led_gpio(gpio::io io) : io {io}
 {
-    this->io = io;
-
     gpio::configure(this->io);
 }
 

@@ -70,6 +70,7 @@ meter::~meter()
 
 void meter::process(void)
 {
+    /* DSP processing takes around 2.68 msec at 48MHz */
     if (this->dsp_buffer_ready)
     {
         /* Apply weighting filter */
@@ -97,7 +98,8 @@ void meter::process(void)
         /* Apply averaging */
         float32_t db_spl = this->averaging_filter->process(db_spl_raw);
 
-        uint32_t averaging_period = this->averaging_filter->time_constant * 1000;
+        const uint32_t averaging_period = this->averaging_filter->time_constant * 1000;
+
         if (hal::system::clock::is_elapsed(this->averaging_time_point, std::chrono::milliseconds(averaging_period)))
         {
             this->averaging_time_point = hal::system::clock::now();
@@ -119,7 +121,7 @@ const meter::data & meter::get_data(void)
 
 void meter::reset_data(void)
 {
-    this->spl_data = {};
+    this->spl_data.spl_min = this->spl_data.spl_max = this->spl_data.spl;
 }
 
 void meter::set_weighting(weighting weighting)

@@ -55,6 +55,13 @@ namespace hal::interface
         virtual int32_t get_sensitivity(void) = 0;
         virtual uint32_t get_sampling_frequency(void) = 0;
     };
+
+    class button
+    {
+    public:
+        virtual ~button() {};
+        virtual bool is_pressed(void) = 0;
+    };
 }
 
 #endif /* HAL_INTERFACE_HPP_ */
