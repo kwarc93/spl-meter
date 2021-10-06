@@ -30,7 +30,7 @@ void lcd_view::update_lcd(void)
 {
     std::string_view s;
 
-    switch (this->curent_view)
+    switch (this->current_view)
     {
         case view::spl:
             s = "dB" + std::string(1, this->current_data.weighting) + ":" + to_aligned_string(lround(this->current_data.spl));
@@ -65,7 +65,7 @@ lcd_view::~lcd_view()
 
 void lcd_view::show(view view)
 {
-    this->curent_view = view;
+    this->current_view = view;
     this->update_lcd();
 }
 

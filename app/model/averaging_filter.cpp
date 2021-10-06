@@ -9,11 +9,11 @@
 
 using namespace spl;
 
-averaging_filter::averaging_filter(float32_t time_constant, float32_t dt)
+averaging_filter::averaging_filter(float32_t time_constant, float32_t time_delta, float32_t inital_value)
 {
     this->time_constant = time_constant;
-    this->alpha = 1 - expf(-dt / time_constant);
-    this->output = 0;
+    this->alpha = 1 - expf(-time_delta / time_constant);
+    this->output = inital_value;
 }
 
 averaging_filter::~averaging_filter()

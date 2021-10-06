@@ -47,9 +47,6 @@ meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mi
     this->dsp_buffer = std::vector<float32_t>(this->mic_samples / 2);
     this->dsp_buffer_ready = false;
 
-    this->mic_data_buffer = std::vector<int16_t>(this->mic_samples);
-    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
-
     this->spl_data = {};
     this->new_spl_data_cb = new_data_cb;
     this->spl_data_period = static_cast<float32_t>(this->dsp_buffer.size()) / this->mic.get_sampling_frequency();
@@ -59,6 +56,8 @@ meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mi
     this->averaging_filter = new slow_averaging(this->spl_data_period);
     this->averaging_time_point = hal::system::clock::time_point();
 
+    this->mic_data_buffer = std::vector<int16_t>(this->mic_samples);
+    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
     this->mic.enable();
 }
 
@@ -129,17 +128,14 @@ void meter::set_weighting(weighting weighting)
     switch (weighting)
     {
         case weighting::A:
-            this->reset_data();
             delete this->weighting_filter;
             this->weighting_filter = new a_weighting();
             break;
         case weighting::C:
-            this->reset_data();
             delete this->weighting_filter;
             this->weighting_filter = new c_weighting();
             break;
         case weighting::Z:
-            this->reset_data();
             delete this->weighting_filter;
             this->weighting_filter = new z_weighting();
             break;
@@ -155,14 +151,12 @@ void meter::set_averaging(averaging averaging)
     switch (averaging)
     {
         case averaging::fast:
-            this->reset_data();
             delete this->averaging_filter;
-            this->averaging_filter = new fast_averaging(this->spl_data_period);
+            this->averaging_filter = new fast_averaging(this->spl_data_period, this->spl_data.spl);
             break;
         case averaging::slow:
-            this->reset_data();
             delete this->averaging_filter;
-            this->averaging_filter = new slow_averaging(this->spl_data_period);
+            this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
             break;
         default:
             break;

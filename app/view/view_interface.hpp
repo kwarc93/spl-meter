@@ -30,9 +30,10 @@ namespace spl
 
         virtual void show(view view) = 0;
         virtual void update(const data &data) = 0;
+        view get_current_view(void) { return current_view; };
     protected:
         data current_data;
-        view curent_view;
+        view current_view;
     };
 }
 

@@ -60,7 +60,6 @@ default_controller::default_controller(void) :
 
 {
     this->spl_view.show(view_interface::view::spl);
-    this->spl_meter.set_averaging(meter::averaging::fast);
 }
 
 default_controller::~default_controller(void)
@@ -79,9 +78,33 @@ void default_controller::process(void)
     this->left_btn.debounce();
     this->right_btn.debounce();
 
-    /* TODO: Complete this logic */
+    /* Check user input */
     if (this->center_btn.was_pressed())
     {
+        if (this->spl_view.get_current_view() != view_interface::view::spl)
+        {
+            this->spl_view.show(view_interface::view::spl);
+            return;
+        }
+
+        const meter::weighting current_weighting = this->spl_meter.get_data().weighting;
+
+        switch (current_weighting)
+        {
+            case meter::weighting::A:
+                this->spl_meter.set_weighting(meter::weighting::C);
+                break;
+            case meter::weighting::C:
+                this->spl_meter.set_weighting(meter::weighting::Z);
+                break;
+            case meter::weighting::Z:
+                this->spl_meter.set_weighting(meter::weighting::A);
+                break;
+            default:
+                this->spl_meter.set_weighting(meter::weighting::A);
+                break;
+        }
+
         this->spl_view.show(view_interface::view::spl);
     }
 
