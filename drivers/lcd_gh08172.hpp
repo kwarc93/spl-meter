@@ -73,6 +73,8 @@ public:
     lcd_gh08172();
     ~lcd_gh08172();
     bool write(const std::string_view &s);
+    bool set_bar(uint8_t lvl);
+    void clear(void);
 private:
     const uint8_t segments = 16;    /* Number of segments in one LCD position (character) */
     const uint8_t positions = 6;    /* Number of LCD positions */

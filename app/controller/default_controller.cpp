@@ -20,17 +20,31 @@ void default_controller::spl_meter_new_data_callback(const spl::meter::data &spl
     char weighting;
     switch (spl_data.weighting)
     {
-        case spl::meter::weighting::A:
+        case spl::meter::weighting::a:
             weighting = 'A';
             break;
-        case spl::meter::weighting::C:
+        case spl::meter::weighting::c:
             weighting = 'C';
             break;
-        case spl::meter::weighting::Z:
+        case spl::meter::weighting::z:
             weighting = 'Z';
             break;
         default:
             weighting = ' ';
+            break;
+    }
+
+    char averaging;
+    switch (spl_data.averaging)
+    {
+        case spl::meter::averaging::slow:
+            averaging = 'S';
+            break;
+        case spl::meter::averaging::fast:
+            averaging = 'F';
+            break;
+        default:
+            averaging = ' ';
             break;
     }
 
@@ -40,6 +54,7 @@ void default_controller::spl_meter_new_data_callback(const spl::meter::data &spl
         .max_spl = spl_data.spl_max,
         .min_spl = spl_data.spl_min,
         .weighting = weighting,
+        .averaging = averaging,
     };
 
     this->spl_view.update(view_data);
@@ -59,7 +74,7 @@ default_controller::default_controller(void) :
     spl_meter {meter(microphone, std::bind(&default_controller::spl_meter_new_data_callback, this, std::placeholders::_1))}
 
 {
-    this->spl_view.show(view_interface::view::spl);
+    this->spl_view.update(view_interface::view::spl);
 }
 
 default_controller::~default_controller(void)
@@ -83,7 +98,7 @@ void default_controller::process(void)
     {
         if (this->spl_view.get_current_view() != view_interface::view::spl)
         {
-            this->spl_view.show(view_interface::view::spl);
+            this->spl_view.update(view_interface::view::spl);
             return;
         }
 
@@ -91,42 +106,45 @@ void default_controller::process(void)
 
         switch (current_weighting)
         {
-            case meter::weighting::A:
-                this->spl_meter.set_weighting(meter::weighting::C);
+            case meter::weighting::a:
+                this->spl_meter.set_weighting(meter::weighting::c);
                 break;
-            case meter::weighting::C:
-                this->spl_meter.set_weighting(meter::weighting::Z);
+            case meter::weighting::c:
+                this->spl_meter.set_weighting(meter::weighting::z);
                 break;
-            case meter::weighting::Z:
-                this->spl_meter.set_weighting(meter::weighting::A);
+            case meter::weighting::z:
+                this->spl_meter.set_weighting(meter::weighting::a);
                 break;
             default:
-                this->spl_meter.set_weighting(meter::weighting::A);
+                this->spl_meter.set_weighting(meter::weighting::a);
                 break;
         }
 
-        this->spl_view.show(view_interface::view::spl);
+        this->spl_view.update(view_interface::view::spl);
     }
 
     if (this->up_btn.was_pressed())
     {
         this->spl_meter.reset_data();
-        this->spl_view.show(view_interface::view::max_spl);
+        this->spl_view.update(view_interface::view::max);
     }
 
     if (this->down_btn.was_pressed())
     {
         this->spl_meter.reset_data();
-        this->spl_view.show(view_interface::view::min_spl);
+        this->spl_view.update(view_interface::view::min);
     }
+
 
     if (this->left_btn.was_pressed())
     {
-        this->spl_meter.set_averaging(meter::averaging::slow);
+        if (this->spl_view.get_current_view() == view_interface::view::spl)
+            this->spl_meter.set_averaging(meter::averaging::slow);
     }
 
     if (this->right_btn.was_pressed())
     {
-        this->spl_meter.set_averaging(meter::averaging::fast);
+        if (this->spl_view.get_current_view() == view_interface::view::spl)
+            this->spl_meter.set_averaging(meter::averaging::fast);
     }
 }

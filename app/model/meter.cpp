@@ -5,7 +5,6 @@
  *      Author: kwarc
  */
 
-#include <memory>
 #include <cmath>
 #include <algorithm>
 #include <functional>
@@ -23,13 +22,13 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
     if (this->dsp_buffer_ready)
     {
         /* Overrun !*/
-        asm volatile ("BKPT 0");
+//        asm volatile ("BKPT 0");
     }
 
     if (this->dsp_buffer.size() != data_len)
     {
         /* Error !*/
-        asm volatile ("BKPT 0");
+//        asm volatile ("BKPT 0");
     }
 
     /* Copy integer values to DSP buffer */
@@ -44,20 +43,24 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 
 meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mic {microphone}
 {
-    this->dsp_buffer = std::vector<float32_t>(this->mic_samples / 2);
+    this->mic_data_buffer.assign(4096, 0);
+    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
+
+    this->dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
+    this->aux_dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
     this->dsp_buffer_ready = false;
 
-    this->spl_data = {};
     this->new_spl_data_cb = new_data_cb;
+    this->spl_data.spl_min = this->spl_data.spl_max = this->spl_data.spl = 30;
     this->spl_data_period = static_cast<float32_t>(this->dsp_buffer.size()) / this->mic.get_sampling_frequency();
 
-    this->spl_data.weighting = weighting::A;
+    this->spl_data.weighting = weighting::a;
     this->weighting_filter = new a_weighting();
-    this->averaging_filter = new slow_averaging(this->spl_data_period);
+
+    this->spl_data.averaging = averaging::slow;
+    this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
     this->averaging_time_point = hal::system::clock::time_point();
 
-    this->mic_data_buffer = std::vector<int16_t>(this->mic_samples);
-    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
     this->mic.enable();
 }
 
@@ -72,21 +75,22 @@ void meter::process(void)
     /* DSP processing takes around 2.68 msec at 48MHz */
     if (this->dsp_buffer_ready)
     {
-        /* Apply weighting filter */
-        auto dsp_buffer_filtered = std::make_unique<std::vector<float32_t>>(this->dsp_buffer.size());
-        if (dsp_buffer_filtered != nullptr)
-            this->weighting_filter->process(this->dsp_buffer, *dsp_buffer_filtered);
+        auto &current_dsp_buffer = this->dsp_buffer;
 
+        /* Apply weighting filter */
+        this->weighting_filter->process(current_dsp_buffer, this->aux_dsp_buffer);
         this->dsp_buffer_ready = false;
+
+        current_dsp_buffer = this->aux_dsp_buffer;
 
         /* Delete offset */
         float32_t mean;
-        arm_mean_f32(dsp_buffer_filtered->data(), dsp_buffer_filtered->size(), &mean);
-        arm_offset_f32(dsp_buffer_filtered->data(), -mean, dsp_buffer_filtered->data(), dsp_buffer_filtered->size());
+        arm_mean_f32(current_dsp_buffer.data(), current_dsp_buffer.size(), &mean);
+        arm_offset_f32(current_dsp_buffer.data(), -mean, current_dsp_buffer.data(), current_dsp_buffer.size());
 
         /* Calculate RMS value */
         float32_t rms;
-        arm_rms_f32(dsp_buffer_filtered->data(), dsp_buffer_filtered->size(), &rms);
+        arm_rms_f32(current_dsp_buffer.data(), current_dsp_buffer.size(), &rms);
 
         /* Normalize RMS value */
         rms /= INT16_MAX;
@@ -127,23 +131,26 @@ void meter::set_weighting(weighting weighting)
 {
     switch (weighting)
     {
-        case weighting::A:
+        case weighting::a:
             delete this->weighting_filter;
             this->weighting_filter = new a_weighting();
             break;
-        case weighting::C:
+        case weighting::c:
             delete this->weighting_filter;
             this->weighting_filter = new c_weighting();
             break;
-        case weighting::Z:
+        case weighting::z:
             delete this->weighting_filter;
             this->weighting_filter = new z_weighting();
             break;
         default:
-            break;
+            return;
     }
 
     this->spl_data.weighting = weighting;
+
+    if (this->new_spl_data_cb != nullptr)
+        this->new_spl_data_cb(this->spl_data);
 }
 
 void meter::set_averaging(averaging averaging)
@@ -159,6 +166,11 @@ void meter::set_averaging(averaging averaging)
             this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
             break;
         default:
-            break;
+            return;
     }
+
+    this->spl_data.averaging = averaging;
+
+    if (this->new_spl_data_cb != nullptr)
+        this->new_spl_data_cb(this->spl_data);
 }

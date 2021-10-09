@@ -174,3 +174,20 @@ bool lcd_gh08172::write(const std::string_view &s)
     lcd::update();
     return position < this->positions;
 }
+
+bool lcd_gh08172::set_bar(uint8_t lvl)
+{
+    if (lvl > this->bars)
+        return false;
+
+    for (uint8_t i = 0; i < this->bars; i++)
+        this->set_bar(i < lvl, i);
+
+    lcd::update();
+    return true;
+}
+
+void lcd_gh08172::clear(void)
+{
+    lcd::clear();
+}

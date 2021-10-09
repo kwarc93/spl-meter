@@ -20,10 +20,10 @@ namespace spl
         lcd_view();
         ~lcd_view();
 
-        void show(view view);
+        void update(view view);
         void update(const data &data);
     private:
-        void update_lcd(void);
+        void update_lcd(const data *data);
         hal::lcd::lcd_6x14 lcd;
     };
 }

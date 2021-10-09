@@ -21,14 +21,15 @@ namespace spl
             float max_spl;
             float min_spl;
             char weighting;
+            char averaging;
         };
 
         enum class view
         {
-            spl, max_spl, min_spl, all
+            spl, max, min, all
         };
 
-        virtual void show(view view) = 0;
+        virtual void update(view view) = 0;
         virtual void update(const data &data) = 0;
         view get_current_view(void) { return current_view; };
     protected:

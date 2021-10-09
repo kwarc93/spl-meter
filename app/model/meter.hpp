@@ -27,7 +27,7 @@ class meter
 public:
     enum class weighting
     {
-        A, C, Z
+        a, c, z
     };
 
     enum class averaging
@@ -41,6 +41,7 @@ public:
         float32_t spl_max;
         float32_t spl_min;
         meter::weighting weighting;
+        meter::averaging averaging;
     };
 
     typedef std::function<void(const data &spl_data)> new_data_cb_t;
@@ -59,7 +60,6 @@ private:
     new_data_cb_t new_spl_data_cb;
 
     hal::microphone &mic;
-    const uint32_t mic_samples = 4096;
     std::vector<int16_t> mic_data_buffer;
     void mic_data_ready(const int16_t *data, uint16_t data_len);
 
@@ -68,6 +68,7 @@ private:
     hal::system::clock::time_point averaging_time_point;
 
     std::vector<float32_t> dsp_buffer;
+    std::vector<float32_t> aux_dsp_buffer;
     volatile bool dsp_buffer_ready;
 };
 

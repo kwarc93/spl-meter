@@ -26,12 +26,14 @@ namespace spl
         void process(void);
     private:
         void spl_meter_new_data_callback(const spl::meter::data &spl_data);
+
         hal::buttons::center_btn center_btn;
         hal::buttons::up_btn up_btn;
         hal::buttons::down_btn down_btn;
         hal::buttons::left_btn left_btn;
         hal::buttons::right_btn right_btn;
         hal::microphones::digital_mic microphone;
+
         lcd_view spl_view;
         meter spl_meter;
     };

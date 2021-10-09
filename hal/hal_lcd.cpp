@@ -24,3 +24,8 @@ bool lcd::lcd_6x14::write(const std::string_view &s)
     return this->drv.write(s);
 }
 
+bool lcd::lcd_6x14::set_bar(uint8_t level)
+{
+    return this->drv.set_bar(level);
+}
+

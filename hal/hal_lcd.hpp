@@ -90,6 +90,7 @@ namespace hal::lcd
         lcd_6x14();
         ~lcd_6x14();
         bool write(const std::string_view &s);
+        bool set_bar(uint8_t level);
     private:
         drivers::lcd_gh08172 drv;
     };
