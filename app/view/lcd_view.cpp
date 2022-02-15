@@ -22,7 +22,7 @@ namespace
 {
     inline std::string to_aligned_string(float value)
     {
-        const uint32_t value_int = lround(value);
+        const uint32_t value_int = lroundf(value);
         const uint8_t padding = value_int / 100 ? 0 : value_int / 10 ? 1 : 2;
         return std::string(padding, ' ') + std::to_string(value_int);
     }
@@ -33,7 +33,7 @@ namespace
         constexpr uint8_t max = 120;
         constexpr uint8_t diff = max - min;
 
-        uint8_t bar_lvl = lround(value);
+        uint8_t bar_lvl = lroundf(value);
 
         return (4 * ((bar_lvl < min ? min : bar_lvl) - min) + diff / 2) / diff;
     }
