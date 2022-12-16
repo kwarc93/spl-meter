@@ -8,6 +8,21 @@
 #ifndef VIEW_CONSOLE_VIEW_HPP_
 #define VIEW_CONSOLE_VIEW_HPP_
 
+#include "view_interface.hpp"
+
+namespace spl
+{
+
+class console_view : public view_interface
+{
+public:
+    console_view();
+    ~console_view();
+
+    void update(view_mode view);
+    void update(const data &data);
+};
+}
 
 
 #endif /* VIEW_CONSOLE_VIEW_HPP_ */

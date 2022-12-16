@@ -5,24 +5,29 @@
  *      Author: kwarc
  */
 
-#include <iostream>
+#include <cstdio>
 
 #include <hal/hal_system.hpp>
 #include <hal/hal_led.hpp>
 
-#include <app/controller/default_controller.hpp>
+#include <app/controller/button_controller.hpp>
+#include <app/controller/console_controller.hpp>
+
+#include <app/view/lcd_view.hpp>
+#include <app/view/console_view.hpp>
 
 int main(void)
 {
     hal::system::init();
 
-    std::cout << "System started" << std::endl;
+    printf("System started\n");
 
     auto led = hal::leds::debug();
     bool led_state = true;
     led.set(led_state);
 
-    auto controller = spl::default_controller();
+    auto view = spl::console_view();
+    auto controller = spl::button_controller(&view);
 
     auto led_blink_start = hal::system::clock::now();
 

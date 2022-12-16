@@ -20,7 +20,7 @@ namespace spl
         lcd_view();
         ~lcd_view();
 
-        void update(view view);
+        void update(view_mode view);
         void update(const data &data);
     private:
         void update_lcd(const data *data);

@@ -24,17 +24,17 @@ namespace spl
             char averaging;
         };
 
-        enum class view
+        enum class view_mode
         {
             spl, max, min, all
         };
 
-        virtual void update(view view) = 0;
+        virtual void update(view_mode view) = 0;
         virtual void update(const data &data) = 0;
-        view get_current_view(void) { return current_view; };
+        view_mode get_current_view_mode(void) { return current_view_mode; };
     protected:
         data current_data;
-        view current_view;
+        view_mode current_view_mode;
     };
 }
 
