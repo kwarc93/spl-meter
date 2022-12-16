@@ -7,6 +7,7 @@
 
 #include "console_view.hpp"
 
+#include <cmath>
 #include <cstdio>
 
 using namespace spl;
@@ -28,6 +29,22 @@ using namespace spl;
 //-----------------------------------------------------------------------------
 /* private */
 
+namespace
+{
+
+uint8_t to_bar_level(float value, uint8_t max_bars)
+{
+    constexpr uint8_t min = 30;
+    constexpr uint8_t max = 120;
+    constexpr uint8_t diff = max - min;
+
+    uint8_t bar_lvl = lroundf(value);
+
+    return (max_bars * ((bar_lvl < min ? min : bar_lvl) - min) + diff / 2) / diff;
+}
+
+}
+
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -48,13 +65,18 @@ void console_view::update(view_mode view)
 
 void console_view::update(const data &data)
 {
-    /* Clear screen */
-    printf("\e[2J");
+    /* Clear screen & reset cursor */
+    printf("\e[2J\e[0;0H");
 
     /* Show numbers */
     const char *avg = (data.averaging == 'F') ? "Fast" : "Slow";
-    printf("\nWeighting: %c\nAveraging: %s\n\nL = %.1f db\nLmax = %.1f db\nLmin = %.1f db\n",
+    printf("\nWeighting: %c\nAveraging: %s\n\nL = %.1f dB\nLmax = %.1f dB\nLmin = %.1f dB\n",
            data.weighting, avg, (double)data.spl, (double)data.max_spl, (double)data.min_spl);
 
     /* Show bar graph */
+    const uint8_t max_bar_lvl = 16;
+    const char bars[max_bar_lvl + 1] = "----------------";
+    const uint8_t bar_lvl = to_bar_level(data.spl, max_bar_lvl);
+    printf("\n|%-*.*s|\n", max_bar_lvl, bar_lvl, bars);
+    printf("0%*s\n", max_bar_lvl + 3, "120dB");
 }
