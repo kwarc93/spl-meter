@@ -10,6 +10,8 @@
 #include <cmath>
 #include <cstdio>
 
+#include "app/utils.hpp"
+
 using namespace spl;
 
 /*
@@ -23,7 +25,7 @@ using namespace spl;
  * Lmin = 33 dB
  *
  * |--------     |
- * 0            120
+ * 0           120dB
  */
 
 //-----------------------------------------------------------------------------
@@ -32,17 +34,6 @@ using namespace spl;
 namespace
 {
 
-uint8_t to_bar_level(float value, uint8_t max_bars)
-{
-    constexpr uint8_t min = 30;
-    constexpr uint8_t max = 120;
-    constexpr uint8_t diff = max - min;
-
-    uint8_t bar_lvl = lroundf(value);
-
-    return (max_bars * ((bar_lvl < min ? min : bar_lvl) - min) + diff / 2) / diff;
-}
-
 }
 
 //-----------------------------------------------------------------------------
@@ -50,7 +41,7 @@ uint8_t to_bar_level(float value, uint8_t max_bars)
 
 console_view::console_view()
 {
-
+    this->update(view_interface::view_mode::all);
 }
 
 console_view::~console_view()
@@ -60,7 +51,7 @@ console_view::~console_view()
 
 void console_view::update(view_mode view)
 {
-    /* Do nothing, because all modes are displayed together */
+    /* Do nothing, because all modes & data are displayed together */
 }
 
 void console_view::update(const data &data)
@@ -76,7 +67,7 @@ void console_view::update(const data &data)
     /* Show bar graph */
     const uint8_t max_bar_lvl = 16;
     const char bars[max_bar_lvl + 1] = "----------------";
-    const uint8_t bar_lvl = to_bar_level(data.spl, max_bar_lvl);
+    const uint8_t bar_lvl = spl::utils::to_bar_level(data.spl, max_bar_lvl);
     printf("\n|%-*.*s|\n", max_bar_lvl, bar_lvl, bars);
     printf("0%*s\n", max_bar_lvl + 3, "120dB");
 }

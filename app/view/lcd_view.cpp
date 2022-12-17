@@ -11,7 +11,7 @@
 #include <string>
 #include <utility>
 
-#include <hal/hal_lcd.hpp>
+#include "app/utils.hpp"
 
 using namespace spl;
 
@@ -27,16 +27,6 @@ namespace
         return std::string(padding, ' ') + std::to_string(value_int);
     }
 
-    uint8_t to_bar_level(float value)
-    {
-        constexpr uint8_t min = 30;
-        constexpr uint8_t max = 120;
-        constexpr uint8_t diff = max - min;
-
-        uint8_t bar_lvl = lroundf(value);
-
-        return (4 * ((bar_lvl < min ? min : bar_lvl) - min) + diff / 2) / diff;
-    }
 }
 
 void lcd_view::update_lcd(const data *data)
@@ -67,7 +57,7 @@ void lcd_view::update_lcd(const data *data)
         value = "   ";
 
     this->lcd.write(unit + value);
-    this->lcd.set_bar(to_bar_level(this->current_data.spl));
+    this->lcd.set_bar(spl::utils::to_bar_level(this->current_data.spl, 4));
 }
 
 //-----------------------------------------------------------------------------
@@ -75,7 +65,7 @@ void lcd_view::update_lcd(const data *data)
 
 lcd_view::lcd_view()
 {
-
+    this->update(view_interface::view_mode::spl);
 }
 
 lcd_view::~lcd_view()
@@ -85,6 +75,9 @@ lcd_view::~lcd_view()
 
 void lcd_view::update(view_mode view)
 {
+    if (this->current_view_mode == view)
+        return;
+
     this->current_view_mode = view;
     this->update_lcd(nullptr);
 }
