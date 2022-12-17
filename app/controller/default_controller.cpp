@@ -102,16 +102,12 @@ void default_controller::process_user_command(user_input_interface::user_cmd cmd
             break;
 
         case user_input_interface::user_cmd::change_averaging:
-        {
-            const meter::averaging current_averaging = this->spl_meter.get_data().averaging;
-
             /* Loop through: Fast -> Slow */
-            if (current_averaging == meter::averaging::slow)
+            if (this->spl_meter.get_data().averaging == meter::averaging::slow)
                 this->spl_meter.set_averaging(meter::averaging::fast);
             else
                 this->spl_meter.set_averaging(meter::averaging::slow);
             break;
-        }
 
         case user_input_interface::user_cmd::set_a_weighting:
             this->spl_meter.set_weighting(meter::weighting::a);
@@ -153,7 +149,6 @@ void default_controller::process_user_command(user_input_interface::user_cmd cmd
                 break;
 
             case user_input_interface::user_cmd::show_actual:
-            {
                 if (view->get_current_view_mode() != view_interface::view_mode::spl)
                 {
                     view->update(view_interface::view_mode::spl);
@@ -164,7 +159,6 @@ void default_controller::process_user_command(user_input_interface::user_cmd cmd
 
                 view->update(view_interface::view_mode::spl);
                 break;
-            }
 
             default:
                 break;
