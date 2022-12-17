@@ -14,6 +14,27 @@ using namespace spl;
 //-----------------------------------------------------------------------------
 /* private */
 
+namespace
+{
+
+spl::meter::weighting switch_weighting(spl::meter::weighting current_weighting)
+{
+    /* Loop through: A -> C -> Z */
+    switch (current_weighting)
+    {
+        case meter::weighting::a:
+            return meter::weighting::c;
+        case meter::weighting::c:
+            return meter::weighting::z;
+        case meter::weighting::z:
+            return meter::weighting::a;
+        default:
+            return meter::weighting::a;
+    }
+}
+
+}
+
 void default_controller::spl_meter_new_data_callback(const spl::meter::data &spl_data)
 {
     /* Translate to view data type */
@@ -77,28 +98,8 @@ void default_controller::process_user_command(user_input_interface::user_cmd cmd
             break;
 
         case user_input_interface::user_cmd::change_weighting:
-        {
-            const meter::weighting current_weighting = this->spl_meter.get_data().weighting;
-
-            /* Loop through: A -> C -> Z */
-            switch (current_weighting)
-            {
-                case meter::weighting::a:
-                    this->spl_meter.set_weighting(meter::weighting::c);
-                    break;
-                case meter::weighting::c:
-                    this->spl_meter.set_weighting(meter::weighting::z);
-                    break;
-                case meter::weighting::z:
-                    this->spl_meter.set_weighting(meter::weighting::a);
-                    break;
-                default:
-                    this->spl_meter.set_weighting(meter::weighting::a);
-                    break;
-            }
-
+            this->spl_meter.set_weighting(switch_weighting(this->spl_meter.get_data().weighting));
             break;
-        }
 
         case user_input_interface::user_cmd::change_averaging:
         {
@@ -159,23 +160,7 @@ void default_controller::process_user_command(user_input_interface::user_cmd cmd
                     break;
                 }
 
-                const meter::weighting current_weighting = this->spl_meter.get_data().weighting;
-
-                switch (current_weighting)
-                {
-                    case meter::weighting::a:
-                        this->spl_meter.set_weighting(meter::weighting::c);
-                        break;
-                    case meter::weighting::c:
-                        this->spl_meter.set_weighting(meter::weighting::z);
-                        break;
-                    case meter::weighting::z:
-                        this->spl_meter.set_weighting(meter::weighting::a);
-                        break;
-                    default:
-                        this->spl_meter.set_weighting(meter::weighting::a);
-                        break;
-                }
+                this->spl_meter.set_weighting(switch_weighting(this->spl_meter.get_data().weighting));
 
                 view->update(view_interface::view_mode::spl);
                 break;
