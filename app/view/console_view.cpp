@@ -71,3 +71,13 @@ void console_view::update(const data &data)
     printf("\n|%-*.*s|\n", max_bar_lvl, bar_lvl, bars);
     printf("0%*s\n", max_bar_lvl + 3, "120dB");
 }
+
+console_view::user_cmd console_view::process(void)
+{
+    /* TODO: Implement console/serial port input handling */
+
+    user_cmd cmd = user_cmd::none;
+
+    this->last_cmd = cmd;
+    return cmd;
+}

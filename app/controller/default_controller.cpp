@@ -14,27 +14,6 @@ using namespace spl;
 //-----------------------------------------------------------------------------
 /* private */
 
-namespace
-{
-
-spl::meter::weighting switch_weighting(spl::meter::weighting current_weighting)
-{
-    /* Loop through: A -> C -> Z */
-    switch (current_weighting)
-    {
-        case meter::weighting::a:
-            return meter::weighting::c;
-        case meter::weighting::c:
-            return meter::weighting::z;
-        case meter::weighting::z:
-            return meter::weighting::a;
-        default:
-            return meter::weighting::a;
-    }
-}
-
-}
-
 void default_controller::spl_meter_new_data_callback(const spl::meter::data &spl_data)
 {
     /* Translate to view data type */
@@ -85,95 +64,50 @@ void default_controller::spl_meter_new_data_callback(const spl::meter::data &spl
     }
 }
 
-void default_controller::process_user_command(user_input_interface::user_cmd cmd)
+void default_controller::process_user_command(view_interface::user_cmd cmd)
 {
-    if (cmd == user_input_interface::user_cmd::none)
+    if (cmd == view_interface::user_cmd::none)
         return;
 
     /* Handle model-related commands */
     switch (cmd)
     {
-        case user_input_interface::user_cmd::reset_data:
+        case view_interface::user_cmd::reset_data:
             this->spl_meter.reset_data();
             break;
 
-        case user_input_interface::user_cmd::change_weighting:
-            this->spl_meter.set_weighting(switch_weighting(this->spl_meter.get_data().weighting));
-            break;
-
-        case user_input_interface::user_cmd::change_averaging:
-            /* Loop through: Fast -> Slow */
-            if (this->spl_meter.get_data().averaging == meter::averaging::slow)
-                this->spl_meter.set_averaging(meter::averaging::fast);
-            else
-                this->spl_meter.set_averaging(meter::averaging::slow);
-            break;
-
-        case user_input_interface::user_cmd::set_a_weighting:
+        case view_interface::user_cmd::set_a_weighting:
             this->spl_meter.set_weighting(meter::weighting::a);
             break;
 
-        case user_input_interface::user_cmd::set_c_weighting:
+        case view_interface::user_cmd::set_c_weighting:
             this->spl_meter.set_weighting(meter::weighting::c);
             break;
 
-        case user_input_interface::user_cmd::set_z_weighting:
+        case view_interface::user_cmd::set_z_weighting:
             this->spl_meter.set_weighting(meter::weighting::z);
             break;
 
-        case user_input_interface::user_cmd::set_slow_averaging:
+        case view_interface::user_cmd::set_slow_averaging:
             this->spl_meter.set_averaging(meter::averaging::slow);
             break;
 
-        case user_input_interface::user_cmd::set_fast_averaging:
+        case view_interface::user_cmd::set_fast_averaging:
             this->spl_meter.set_averaging(meter::averaging::fast);
             break;
 
         default:
             break;
     }
-
-    /* Handle view-related commands for all views */
-    for (auto view : this->views)
-    {
-        switch (cmd)
-        {
-            case user_input_interface::user_cmd::show_max:
-                this->spl_meter.reset_data();
-                view->update(view_interface::view_mode::max);
-                break;
-
-            case user_input_interface::user_cmd::show_min:
-                this->spl_meter.reset_data();
-                view->update(view_interface::view_mode::min);
-                break;
-
-            case user_input_interface::user_cmd::show_actual:
-                if (view->get_current_view_mode() != view_interface::view_mode::spl)
-                {
-                    view->update(view_interface::view_mode::spl);
-                    break;
-                }
-
-                this->spl_meter.set_weighting(switch_weighting(this->spl_meter.get_data().weighting));
-
-                view->update(view_interface::view_mode::spl);
-                break;
-
-            default:
-                break;
-        }
-    }
 }
 
 //-----------------------------------------------------------------------------
 /* public */
 
-default_controller::default_controller(std::vector<view_interface*> &views, std::vector<user_input_interface*> &user_inputs) :
+default_controller::default_controller(std::vector<view_interface*> &views) :
     microphone {hal::microphones::digital_mic()},
     spl_meter {meter(microphone, std::bind(&default_controller::spl_meter_new_data_callback, this, std::placeholders::_1))},
-    views {views},
-    user_inputs {user_inputs}
+    views {views}
 {
 
 }
@@ -187,11 +121,11 @@ void default_controller::process(void)
 {
     this->spl_meter.process();
 
-    for (auto user_input : this->user_inputs)
+    for (auto view : this->views)
     {
-        if (user_input != nullptr)
+        if (view != nullptr)
         {
-            const user_input_interface::user_cmd cmd = user_input->process();
+            const view_interface::user_cmd cmd = view->process();
             this->process_user_command(cmd);
         }
     }
