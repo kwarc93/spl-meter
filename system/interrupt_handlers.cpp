@@ -6,7 +6,9 @@
  */
 
 #include <hal/hal_system.hpp>
+
 #include <drivers/stm32l4/dfsdm.hpp>
+#include <drivers/stm32l4/usart.hpp>
 
 //-----------------------------------------------------------------------------
 /* interrupt handlers */
@@ -20,3 +22,10 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
 {
     drivers::dfsdm::dma_irq_handler(drivers::dfsdm::filter::id::f0);
 }
+
+extern "C" void USART2_IRQHandler(void)
+{
+    constexpr uint8_t id = static_cast<uint8_t>(drivers::usart::id::usart2);
+    drivers::usart::active_objects[id]->irq_handler();
+}
+

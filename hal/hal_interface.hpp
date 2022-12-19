@@ -26,6 +26,13 @@ namespace hal::interface
         virtual void write(std::byte byte) = 0;
         virtual std::size_t read(std::byte *data, std::size_t size) = 0;
         virtual std::size_t write(const std::byte *data, std::size_t size) = 0;
+
+        typedef std::function<void(const std::byte *data, std::size_t bytes_read)> read_cb_t;
+        typedef std::function<void(std::size_t bytes_written)> write_cb_t;
+
+        virtual void read_async(std::byte *data, std::size_t size, const read_cb_t &callback) = 0;
+        virtual void write_async(const std::byte *data, std::size_t size, const write_cb_t &callback) = 0;
+
     };
 
     class temperature_sensor

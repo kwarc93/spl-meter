@@ -11,6 +11,7 @@
 #include <hal/hal_interface.hpp>
 
 #include <cstdint>
+#include <array>
 
 namespace drivers
 {
@@ -24,16 +25,28 @@ public:
     };
 
     usart(id id, uint32_t baudrate);
-    ~usart() {};
+    ~usart();
 
     std::byte read(void);
     void write(std::byte byte);
     std::size_t read(std::byte *data, std::size_t size);
     std::size_t write(const std::byte *data, std::size_t size);
 
+    void read_async(std::byte *data, std::size_t size, const read_cb_t &callback);
+    void write_async(const std::byte *data, std::size_t size, const write_cb_t &callback);
+
+    void irq_handler(void);
+
+    static std::array<usart*, 3> active_objects; /* For IRQ handling, must correspond to the enum class usart::id */
     struct usart_hw;
 private:
     const usart_hw &hw;
+
+    std::size_t async_read_counter;
+    std::size_t async_read_data_length;
+    std::byte *async_read_data;
+    read_cb_t async_read_callback;
+    write_cb_t async_write_callback;
 };
 
 }
