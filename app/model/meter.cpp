@@ -44,7 +44,8 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mic {microphone}
 {
     this->mic_data_buffer.assign(4096, 0);
-    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
+    this->mic.init(this->mic_data_buffer,
+                   [this](const int16_t *data, uint16_t data_len) -> void { this->mic_data_ready(data, data_len); });
 
     this->dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
     this->aux_dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);

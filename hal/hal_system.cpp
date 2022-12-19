@@ -61,18 +61,31 @@ void system::init(void)
 
 extern "C" int _write (int fd, char *ptr, int len)
 {
-    auto &debug = usart::debug::get_instance();
-    return debug.write(reinterpret_cast<std::byte*>(ptr), len);
+    auto &stdio = usart::stdio::get_instance();
+    return stdio.write(reinterpret_cast<std::byte*>(ptr), len);
 }
 
 extern "C" int _read (int fd, char *ptr, int len)
 {
-    auto &debug = usart::debug::get_instance();
-    return debug.read(reinterpret_cast<std::byte*>(ptr), len);
+    auto &stdio = usart::stdio::get_instance();
+    return stdio.read(reinterpret_cast<std::byte*>(ptr), len);
 }
 
 extern "C" void _ttywrch(int ch)
 {
-    auto &debug = usart::debug::get_instance();
-    debug.write(static_cast<std::byte>(ch));
+    auto &stdio = usart::stdio::get_instance();
+    stdio.write(static_cast<std::byte>(ch));
+}
+
+extern "C" int putchar (int c)
+{
+    auto &stdio = usart::stdio::get_instance();
+    stdio.write(static_cast<std::byte>(c));
+    return c;
+}
+
+extern "C" int getchar(void)
+{
+    auto &stdio = usart::stdio::get_instance();
+    return static_cast<int>(stdio.read());
 }

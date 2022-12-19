@@ -23,6 +23,9 @@ public:
 
     void update(const data &data) override;
     void process(void) override;
+private:
+    char received_char;
+    void character_received_callback(const std::byte *data, std::size_t bytes_read);
 };
 
 }

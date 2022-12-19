@@ -10,8 +10,10 @@
 #include <cmath>
 #include <cstdio>
 
-#include "app/controller/default_controller.hpp"
-#include "app/utils.hpp"
+#include <app/controller/default_controller.hpp>
+#include <app/utils.hpp>
+
+#include <hal/hal_usart.hpp>
 
 using namespace spl;
 
@@ -32,9 +34,18 @@ using namespace spl;
 //-----------------------------------------------------------------------------
 /* private */
 
-namespace
+void console_view::character_received_callback(const std::byte *data, std::size_t bytes_read)
 {
+    if (bytes_read == 1)
+        putchar(this->received_char);
 
+    auto &stdin_usart = hal::usart::stdio::get_instance();
+
+    stdin_usart.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
+                           [this](const std::byte *data, std::size_t bytes_read) -> void
+                           {
+                                this->character_received_callback(data, bytes_read);
+                           });
 }
 
 //-----------------------------------------------------------------------------
@@ -42,7 +53,13 @@ namespace
 
 console_view::console_view()
 {
+    auto &stdin_usart = hal::usart::stdio::get_instance();
 
+    stdin_usart.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
+                           [this](const std::byte *data, std::size_t bytes_read) -> void
+                           {
+                                this->character_received_callback(data, bytes_read);
+                           });
 }
 
 console_view::~console_view()
@@ -53,7 +70,7 @@ console_view::~console_view()
 void console_view::update(const data &data)
 {
     /* Clear screen & reset cursor */
-    printf("\e[2J\e[0;0H");
+    printf("\e[2J\e[1;1H");
 
     /* Show numbers */
     const char *avg = (data.averaging == 'F') ? "Fast" : "Slow";
@@ -70,5 +87,5 @@ void console_view::update(const data &data)
 
 void console_view::process(void)
 {
-    /* TODO: Implement console/serial port input handling */
+    /* TODO: Implement console/serial port input command handling */
 }

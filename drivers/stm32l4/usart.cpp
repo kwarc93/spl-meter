@@ -128,14 +128,14 @@ void usart::irq_handler(void)
             *(this->async_read_data + this->async_read_counter) = static_cast<std::byte>(this->hw.reg->RDR);
             this->async_read_counter++;
         }
-        else
+
+        if (this->async_read_counter == this->async_read_data_length)
         {
-            this->async_read_callback(this->async_read_data, this->async_read_counter);
-
             this->hw.reg->CR1 &= ~USART_CR1_RXNEIE;
-
-            IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART2_IRQn);
+            IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */
             NVIC_DisableIRQ(nvic_irq);
+
+            this->async_read_callback(this->async_read_data, this->async_read_counter);
         }
     }
 }
