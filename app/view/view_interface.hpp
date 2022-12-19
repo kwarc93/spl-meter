@@ -8,6 +8,8 @@
 #ifndef VIEW_VIEW_INTERFACE_HPP_
 #define VIEW_VIEW_INTERFACE_HPP_
 
+#include <app/controller/events.hpp>
+
 namespace spl
 {
     /* Forward declaration */
@@ -27,12 +29,13 @@ namespace spl
             char averaging;
         };
 
-        void set_controller(default_controller *controller) { this->controller = controller; };
         virtual void update(const data &data) = 0;
         virtual void process(void) = 0;
+
+        void set_event_sender_callback(const event_cb_t &cb) { this->send_event_cb = cb; };
     protected:
         data current_data;
-        default_controller *controller;
+        event_cb_t send_event_cb;
     };
 }
 

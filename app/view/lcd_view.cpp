@@ -88,6 +88,12 @@ void lcd_view::update_view_mode(view_mode view)
     this->update_lcd(nullptr);
 }
 
+void lcd_view::send_event(const event_t &e)
+{
+    if (this->send_event_cb)
+        this->send_event_cb(e);
+}
+
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -124,37 +130,48 @@ void lcd_view::process(void)
     /* Check user input */
     if (this->center_btn.was_pressed())
     {
-        if (this->current_view_mode != view_mode::spl)
+        if (this->current_view_mode == view_mode::spl)
         {
-            this->update_view_mode(view_mode::spl);
+            change_weighting_evt_t e;
+            e.weighting = switch_weighting(this->current_data.weighting);
+            this->send_event_cb(e);
             return;
         }
 
-        this->controller->change_weighting(switch_weighting(this->current_data.weighting));
         this->update_view_mode(view_mode::spl);
     }
 
     if (this->up_btn.was_pressed())
     {
-        this->controller->clear_max_spl_data();
+        clear_max_spl_data_evt_t e;
+        this->send_event_cb(e);
         this->update_view_mode(view_mode::max);
     }
 
     if (this->down_btn.was_pressed())
     {
-        this->controller->clear_min_spl_data();
+        clear_min_spl_data_evt_t e;
+        this->send_event_cb(e);
         this->update_view_mode(view_mode::min);
     }
 
     if (this->left_btn.was_pressed())
     {
         if (this->current_view_mode == view_mode::spl)
-            this->controller->change_averaging(spl::averaging_t::slow);
+        {
+            change_averaging_evt_t e;
+            e.averaging = spl::averaging_t::slow;
+            this->send_event_cb(e);
+        }
     }
 
     if (this->right_btn.was_pressed())
     {
         if (this->current_view_mode == view_mode::spl)
-            this->controller->change_averaging(spl::averaging_t::fast);
+        {
+            change_averaging_evt_t e;
+            e.averaging = spl::averaging_t::fast;
+            this->send_event_cb(e);
+        }
     }
 }

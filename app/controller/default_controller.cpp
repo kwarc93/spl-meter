@@ -66,6 +66,27 @@ void default_controller::model_new_data_callback(const spl::data_t &model_data)
     }
 }
 
+void default_controller::event_handler(const change_averaging_evt_t &e)
+{
+    this->model->set_averaging(e.averaging);
+}
+
+void default_controller::event_handler(const change_weighting_evt_t &e)
+{
+    this->model->set_weighting(e.weighting);
+}
+
+void default_controller::event_handler(const clear_min_spl_data_evt_t &e)
+{
+    this->model->reset_min_spl_data();
+}
+
+void default_controller::event_handler(const clear_max_spl_data_evt_t &e)
+{
+    this->model->reset_max_spl_data();
+}
+
+
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -74,7 +95,7 @@ default_controller::default_controller(meter &model, std::vector<view_interface*
     views {views}
 {
     for (auto view : this->views)
-        view->set_controller(this);
+        view->set_event_sender_callback(std::bind(&default_controller::handle_event, this, std::placeholders::_1));
 
     this->model->set_new_data_callback(std::bind(&default_controller::model_new_data_callback, this, std::placeholders::_1));
     this->model->enable();
@@ -96,22 +117,7 @@ void default_controller::process(void)
     }
 }
 
-void default_controller::change_weighting(spl::weighting_t weighting)
+void default_controller::handle_event(const event_t &e)
 {
-    this->model->set_weighting(weighting);
-}
-
-void default_controller::change_averaging(spl::averaging_t averaging)
-{
-    this->model->set_averaging(averaging);
-}
-
-void default_controller::clear_min_spl_data(void)
-{
-    this->model->reset_min_spl_data();
-}
-
-void default_controller::clear_max_spl_data(void)
-{
-    this->model->reset_max_spl_data();
+    std::visit([this](const auto &e) { return this->event_handler(e); }, e);
 }

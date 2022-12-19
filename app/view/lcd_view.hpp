@@ -31,6 +31,7 @@ namespace spl
 
         void update_lcd(const data *data);
         void update_view_mode(view_mode view);
+        void send_event(const event_t &e);
 
         view_mode current_view_mode;
 

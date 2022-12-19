@@ -13,6 +13,8 @@
 #include <app/model/data_types.hpp>
 #include <app/view/view_interface.hpp>
 
+#include "events.hpp"
+
 namespace spl
 {
     /* Forward declaration */
@@ -25,11 +27,14 @@ namespace spl
         ~default_controller();
 
         void process(void);
-        void change_weighting(spl::weighting_t weighting);
-        void change_averaging(spl::averaging_t averaging);
-        void clear_min_spl_data(void);
-        void clear_max_spl_data(void);
+        void handle_event(const event_t &e);
     private:
+        /* Event handlers */
+        void event_handler(const change_averaging_evt_t &e);
+        void event_handler(const change_weighting_evt_t &e);
+        void event_handler(const clear_min_spl_data_evt_t &e);
+        void event_handler(const clear_max_spl_data_evt_t &e);
+
         void model_new_data_callback(const spl::data_t &data);
 
         meter *model;
