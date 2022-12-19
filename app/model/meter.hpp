@@ -46,10 +46,13 @@ public:
 
     typedef std::function<void(const data &spl_data)> new_data_cb_t;
 public:
-    meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb);
+    meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb = nullptr);
     ~meter();
 
+    void initialize(void);
     void process(void);
+    void register_new_data_callback(const new_data_cb_t &new_data_cb);
+
     const data &get_data(void);
     void reset_data(void);
     void set_weighting(weighting weighting);

@@ -44,7 +44,6 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mic {microphone}
 {
     this->mic_data_buffer.assign(4096, 0);
-    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
 
     this->dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
     this->aux_dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
@@ -59,15 +58,19 @@ meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mi
 
     this->spl_data.averaging = averaging::slow;
     this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
-    this->averaging_time_point = hal::system::clock::time_point();
-
-    this->mic.enable();
 }
 
 meter::~meter()
 {
     delete this->weighting_filter;
     delete this->averaging_filter;
+}
+
+void meter::initialize(void)
+{
+    this->averaging_time_point = hal::system::clock::time_point();
+    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
+    this->mic.enable();
 }
 
 void meter::process(void)
@@ -115,6 +118,11 @@ void meter::process(void)
                 this->new_spl_data_cb(this->spl_data);
         }
     }
+}
+
+void meter::register_new_data_callback(const new_data_cb_t &new_data_cb)
+{
+    this->new_spl_data_cb = new_data_cb;
 }
 
 const meter::data & meter::get_data(void)
