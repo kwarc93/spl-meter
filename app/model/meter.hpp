@@ -16,6 +16,7 @@
 
 #include <cmsis/arm_math.h>
 
+#include "data_types.hpp"
 #include "weighting_filter.hpp"
 #include "averaging_filter.hpp"
 
@@ -25,40 +26,22 @@ namespace spl
 class meter
 {
 public:
-    enum class weighting
-    {
-        a, c, z
-    };
-
-    enum class averaging
-    {
-        fast, slow
-    };
-
-    struct data
-    {
-        float32_t spl;
-        float32_t spl_max;
-        float32_t spl_min;
-        meter::weighting weighting;
-        meter::averaging averaging;
-    };
-
-    typedef std::function<void(const data &spl_data)> new_data_cb_t;
+    typedef std::function<void(const data_t &spl_data)> new_data_cb_t;
 public:
     meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb = nullptr);
     ~meter();
 
-    void initialize(void);
+    void enable(void);
     void process(void);
-    void register_new_data_callback(const new_data_cb_t &new_data_cb);
+    void set_new_data_callback(const new_data_cb_t &new_data_cb);
 
-    const data &get_data(void);
-    void reset_data(void);
-    void set_weighting(weighting weighting);
-    void set_averaging(averaging averaging);
+    const data_t &get_data(void);
+    void reset_min_spl_data(void);
+    void reset_max_spl_data(void);
+    void set_weighting(weighting_t weighting);
+    void set_averaging(averaging_t averaging);
 private:
-    data spl_data;
+    data_t spl_data;
     float32_t spl_data_period;
     new_data_cb_t new_spl_data_cb;
 

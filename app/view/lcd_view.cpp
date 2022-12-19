@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "app/controller/default_controller.hpp"
 #include "app/utils.hpp"
 
 using namespace spl;
@@ -27,19 +28,19 @@ namespace
         return std::string(padding, ' ') + std::to_string(value_int);
     }
 
-    lcd_view::user_cmd switch_weighting(char current_weighting)
+    spl::weighting_t switch_weighting(char current_weighting)
     {
         /* Loop through: A -> C -> Z */
         switch (current_weighting)
         {
             case 'A':
-                return lcd_view::user_cmd::set_c_weighting;
+                return spl::weighting_t::c;
             case 'C':
-                return lcd_view::user_cmd::set_z_weighting;
+                return spl::weighting_t::z;
             case 'Z':
-                return lcd_view::user_cmd::set_a_weighting;
+                return spl::weighting_t::a;
             default:
-                return lcd_view::user_cmd::set_a_weighting;
+                return spl::weighting_t::a;
         }
     }
 
@@ -72,8 +73,19 @@ void lcd_view::update_lcd(const data *data)
     if (data == nullptr)
         value = "   ";
 
+    const uint8_t max_bar_lvl = 4;
+
     this->lcd.write(unit + value);
-    this->lcd.set_bar(spl::utils::to_bar_level(this->current_data.spl, 4));
+    this->lcd.set_bar(spl::utils::to_bar_level(this->current_data.spl, max_bar_lvl));
+}
+
+void lcd_view::update_view_mode(view_mode view)
+{
+    if (this->current_view_mode == view)
+        return;
+
+    this->current_view_mode = view;
+    this->update_lcd(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -86,22 +98,12 @@ lcd_view::lcd_view() :
     left_btn {hal::buttons::left_btn()},
     right_btn {hal::buttons::right_btn()}
 {
-    this->last_cmd = user_cmd::none;
-    this->update(view_mode::spl);
+    this->update_view_mode(view_mode::spl);
 }
 
 lcd_view::~lcd_view()
 {
 
-}
-
-void lcd_view::update(view_mode view)
-{
-    if (this->current_view_mode == view)
-        return;
-
-    this->current_view_mode = view;
-    this->update_lcd(nullptr);
 }
 
 void lcd_view::update(const data &data)
@@ -110,7 +112,7 @@ void lcd_view::update(const data &data)
     this->update_lcd(&data);
 }
 
-lcd_view::user_cmd lcd_view::process(void)
+void lcd_view::process(void)
 {
     /* TODO: Move button debouncing to timer ISR */
     this->center_btn.debounce();
@@ -119,46 +121,40 @@ lcd_view::user_cmd lcd_view::process(void)
     this->left_btn.debounce();
     this->right_btn.debounce();
 
-    user_cmd cmd = user_cmd::none;
-
     /* Check user input */
     if (this->center_btn.was_pressed())
     {
-        if (this->get_current_view_mode() != view_mode::spl)
+        if (this->current_view_mode != view_mode::spl)
         {
-            this->update(view_mode::spl);
-            return cmd;
+            this->update_view_mode(view_mode::spl);
+            return;
         }
 
-        cmd = switch_weighting(this->current_data.weighting);
-
-        this->update(view_mode::spl);
+        this->controller->change_weighting(switch_weighting(this->current_data.weighting));
+        this->update_view_mode(view_mode::spl);
     }
 
     if (this->up_btn.was_pressed())
     {
-        cmd = user_cmd::reset_data;
-        this->update(view_mode::max);
+        this->controller->clear_max_spl_data();
+        this->update_view_mode(view_mode::max);
     }
 
     if (this->down_btn.was_pressed())
     {
-        cmd = user_cmd::reset_data;
-        this->update(view_mode::min);
+        this->controller->clear_min_spl_data();
+        this->update_view_mode(view_mode::min);
     }
 
     if (this->left_btn.was_pressed())
     {
-        if (this->get_current_view_mode() == view_mode::spl)
-            cmd = user_cmd::set_slow_averaging;
+        if (this->current_view_mode == view_mode::spl)
+            this->controller->change_averaging(spl::averaging_t::slow);
     }
 
     if (this->right_btn.was_pressed())
     {
-        if (this->get_current_view_mode() == view_mode::spl)
-            cmd = user_cmd::set_fast_averaging;
+        if (this->current_view_mode == view_mode::spl)
+            this->controller->change_averaging(spl::averaging_t::fast);
     }
-
-    this->last_cmd = cmd;
-    return cmd;
 }

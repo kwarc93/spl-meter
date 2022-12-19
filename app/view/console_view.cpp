@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include "app/controller/default_controller.hpp"
 #include "app/utils.hpp"
 
 using namespace spl;
@@ -41,17 +42,12 @@ namespace
 
 console_view::console_view()
 {
-    this->update(view_interface::view_mode::all);
+
 }
 
 console_view::~console_view()
 {
 
-}
-
-void console_view::update(view_mode view)
-{
-    /* Do nothing, because all modes & data are displayed together */
 }
 
 void console_view::update(const data &data)
@@ -72,12 +68,7 @@ void console_view::update(const data &data)
     printf("0%*s\n", max_bar_lvl + 3, "120dB");
 }
 
-console_view::user_cmd console_view::process(void)
+void console_view::process(void)
 {
     /* TODO: Implement console/serial port input handling */
-
-    user_cmd cmd = user_cmd::none;
-
-    this->last_cmd = cmd;
-    return cmd;
 }

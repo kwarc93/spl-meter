@@ -10,6 +10,8 @@
 
 #include "view_interface.hpp"
 
+#include <cstdint>
+
 namespace spl
 {
 
@@ -19,10 +21,10 @@ public:
     console_view();
     ~console_view();
 
-    void update(view_mode view) override;
     void update(const data &data) override;
-    user_cmd process(void) override;
+    void process(void) override;
 };
+
 }
 
 

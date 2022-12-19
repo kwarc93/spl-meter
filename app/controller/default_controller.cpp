@@ -9,24 +9,26 @@
 
 #include "default_controller.hpp"
 
+#include <app/model/meter.hpp>
+
 using namespace spl;
 
 //-----------------------------------------------------------------------------
 /* private */
 
-void default_controller::model_new_data_callback(const spl::meter::data &model_data)
+void default_controller::model_new_data_callback(const spl::data_t &model_data)
 {
     /* Translate to view data type */
     char weighting;
     switch (model_data.weighting)
     {
-        case spl::meter::weighting::a:
+        case spl::weighting_t::a:
             weighting = 'A';
             break;
-        case spl::meter::weighting::c:
+        case spl::weighting_t::c:
             weighting = 'C';
             break;
-        case spl::meter::weighting::z:
+        case spl::weighting_t::z:
             weighting = 'Z';
             break;
         default:
@@ -37,10 +39,10 @@ void default_controller::model_new_data_callback(const spl::meter::data &model_d
     char averaging;
     switch (model_data.averaging)
     {
-        case spl::meter::averaging::slow:
+        case spl::averaging_t::slow:
             averaging = 'S';
             break;
-        case spl::meter::averaging::fast:
+        case spl::averaging_t::fast:
             averaging = 'F';
             break;
         default:
@@ -64,43 +66,6 @@ void default_controller::model_new_data_callback(const spl::meter::data &model_d
     }
 }
 
-void default_controller::process_user_command(view_interface::user_cmd cmd)
-{
-    if (cmd == view_interface::user_cmd::none)
-        return;
-
-    /* Handle model-related commands */
-    switch (cmd)
-    {
-        case view_interface::user_cmd::reset_data:
-            this->model->reset_data();
-            break;
-
-        case view_interface::user_cmd::set_a_weighting:
-            this->model->set_weighting(meter::weighting::a);
-            break;
-
-        case view_interface::user_cmd::set_c_weighting:
-            this->model->set_weighting(meter::weighting::c);
-            break;
-
-        case view_interface::user_cmd::set_z_weighting:
-            this->model->set_weighting(meter::weighting::z);
-            break;
-
-        case view_interface::user_cmd::set_slow_averaging:
-            this->model->set_averaging(meter::averaging::slow);
-            break;
-
-        case view_interface::user_cmd::set_fast_averaging:
-            this->model->set_averaging(meter::averaging::fast);
-            break;
-
-        default:
-            break;
-    }
-}
-
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -108,8 +73,11 @@ default_controller::default_controller(meter &model, std::vector<view_interface*
     model {&model},
     views {views}
 {
-    this->model->register_new_data_callback(std::bind(&default_controller::model_new_data_callback, this, std::placeholders::_1));
-    this->model->initialize();
+    for (auto view : this->views)
+        view->set_controller(this);
+
+    this->model->set_new_data_callback(std::bind(&default_controller::model_new_data_callback, this, std::placeholders::_1));
+    this->model->enable();
 }
 
 default_controller::~default_controller(void)
@@ -124,9 +92,26 @@ void default_controller::process(void)
     for (auto view : this->views)
     {
         if (view != nullptr)
-        {
-            const view_interface::user_cmd cmd = view->process();
-            this->process_user_command(cmd);
-        }
+            view->process();
     }
+}
+
+void default_controller::change_weighting(spl::weighting_t weighting)
+{
+    this->model->set_weighting(weighting);
+}
+
+void default_controller::change_averaging(spl::averaging_t averaging)
+{
+    this->model->set_averaging(averaging);
+}
+
+void default_controller::clear_min_spl_data(void)
+{
+    this->model->reset_min_spl_data();
+}
+
+void default_controller::clear_max_spl_data(void)
+{
+    this->model->reset_max_spl_data();
 }

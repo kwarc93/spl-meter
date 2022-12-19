@@ -21,11 +21,19 @@ namespace spl
         lcd_view();
         ~lcd_view();
 
-        void update(view_mode view) override;
         void update(const data &data) override;
-        user_cmd process(void) override;
+        void process(void) override;
     private:
+        enum class view_mode
+        {
+            spl, max, min, all
+        };
+
         void update_lcd(const data *data);
+        void update_view_mode(view_mode view);
+
+        view_mode current_view_mode;
+
         hal::lcd::lcd_6x14 lcd;
         hal::buttons::center_btn center_btn;
         hal::buttons::up_btn up_btn;

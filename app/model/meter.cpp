@@ -44,19 +44,21 @@ void meter::mic_data_ready(const int16_t *data, uint16_t data_len)
 meter::meter(hal::microphone &microphone, const new_data_cb_t &new_data_cb) : mic {microphone}
 {
     this->mic_data_buffer.assign(4096, 0);
+    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
 
     this->dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
     this->aux_dsp_buffer.assign(this->mic_data_buffer.size() / 2, 0);
     this->dsp_buffer_ready = false;
 
     this->new_spl_data_cb = new_data_cb;
-    this->spl_data.spl_min = this->spl_data.spl_max = this->spl_data.spl = 30;
+    this->spl_data.spl_min = 120;
+    this->spl_data.spl_max = 0;
     this->spl_data_period = static_cast<float32_t>(this->dsp_buffer.size()) / this->mic.get_sampling_frequency();
 
-    this->spl_data.weighting = weighting::a;
+    this->spl_data.weighting = weighting_t::a;
     this->weighting_filter = new a_weighting();
 
-    this->spl_data.averaging = averaging::slow;
+    this->spl_data.averaging = averaging_t::slow;
     this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
 }
 
@@ -66,10 +68,9 @@ meter::~meter()
     delete this->averaging_filter;
 }
 
-void meter::initialize(void)
+void meter::enable(void)
 {
     this->averaging_time_point = hal::system::clock::time_point();
-    this->mic.init(this->mic_data_buffer, std::bind(&meter::mic_data_ready, this, std::placeholders::_1, std::placeholders::_2));
     this->mic.enable();
 }
 
@@ -120,34 +121,39 @@ void meter::process(void)
     }
 }
 
-void meter::register_new_data_callback(const new_data_cb_t &new_data_cb)
+void meter::set_new_data_callback(const new_data_cb_t &new_data_cb)
 {
     this->new_spl_data_cb = new_data_cb;
 }
 
-const meter::data & meter::get_data(void)
+const spl::data_t & meter::get_data(void)
 {
     return this->spl_data;
 }
 
-void meter::reset_data(void)
+void meter::reset_min_spl_data(void)
 {
-    this->spl_data.spl_min = this->spl_data.spl_max = this->spl_data.spl;
+    this->spl_data.spl_min = this->spl_data.spl;
 }
 
-void meter::set_weighting(weighting weighting)
+void meter::reset_max_spl_data(void)
+{
+    this->spl_data.spl_max = this->spl_data.spl;
+}
+
+void meter::set_weighting(weighting_t weighting)
 {
     switch (weighting)
     {
-        case weighting::a:
+        case weighting_t::a:
             delete this->weighting_filter;
             this->weighting_filter = new a_weighting();
             break;
-        case weighting::c:
+        case weighting_t::c:
             delete this->weighting_filter;
             this->weighting_filter = new c_weighting();
             break;
-        case weighting::z:
+        case weighting_t::z:
             delete this->weighting_filter;
             this->weighting_filter = new z_weighting();
             break;
@@ -161,15 +167,15 @@ void meter::set_weighting(weighting weighting)
         this->new_spl_data_cb(this->spl_data);
 }
 
-void meter::set_averaging(averaging averaging)
+void meter::set_averaging(averaging_t averaging)
 {
     switch (averaging)
     {
-        case averaging::fast:
+        case averaging_t::fast:
             delete this->averaging_filter;
             this->averaging_filter = new fast_averaging(this->spl_data_period, this->spl_data.spl);
             break;
-        case averaging::slow:
+        case averaging_t::slow:
             delete this->averaging_filter;
             this->averaging_filter = new slow_averaging(this->spl_data_period, this->spl_data.spl);
             break;
