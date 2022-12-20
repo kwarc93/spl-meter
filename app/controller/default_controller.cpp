@@ -57,6 +57,7 @@ void default_controller::model_new_data_callback(const spl::data_t &model_data)
         .min_spl = model_data.spl_min,
         .weighting = weighting,
         .averaging = averaging,
+        .error_code = this->error_code,
     };
 
     for (auto view : this->views)
@@ -94,6 +95,8 @@ default_controller::default_controller(meter &model, std::vector<view_interface*
     model {&model},
     views {views}
 {
+    this->error_code = 0;
+
     for (auto view : this->views)
         view->set_event_sender_callback([this](const event_t &e) { this->handle_event(e); });
 

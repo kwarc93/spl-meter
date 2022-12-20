@@ -27,6 +27,7 @@ namespace spl
             float min_spl;
             char weighting;
             char averaging;
+            int error_code;
         };
 
         virtual void update(const data &data) = 0;

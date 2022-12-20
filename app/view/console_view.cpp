@@ -10,7 +10,6 @@
 #include <cmath>
 #include <cstdio>
 
-#include <app/controller/default_controller.hpp>
 #include <app/utils.hpp>
 
 #include <hal/hal_usart.hpp>
@@ -31,7 +30,7 @@ using namespace spl;
  * 0           120dB
  */
 
-#define CLI_START   "\e[12;1H"
+#define CLI_START   "\e[12;1H> "
 #define GUI_END     "\e[10;21H"
 
 //-----------------------------------------------------------------------------
@@ -50,8 +49,8 @@ void console_view::character_received_callback(const std::byte *data, std::size_
 
 console_view::console_view() : stdio_serial { hal::usart::stdio::get_instance() }
 {
-    /* Set coursor at the start of the commandline and save it, clear screen */
-    printf(CLI_START "\e[s\e[2J");
+    /* Clear screen */
+    printf("\e[2J");
 
     /* Start listening for character */
     this->char_received = false;
@@ -69,7 +68,9 @@ console_view::~console_view()
 
 void console_view::update(const data &data)
 {
-    /* Clear screen & reset cursor */
+    this->current_data = data;
+
+    /* Clear screen & reset cursor at the beginning */
     printf(GUI_END "\e[1J\e[1;1H");
 
     /* Show numbers */
@@ -81,16 +82,54 @@ void console_view::update(const data &data)
     const uint8_t max_bar_lvl = 16;
     const char bars[max_bar_lvl + 1] = "----------------";
     const uint8_t bar_lvl = spl::utils::to_bar_level(data.spl, max_bar_lvl);
-    printf("\n|%-*.*s|\n0%*s\n\e[u", max_bar_lvl, bar_lvl, bars, max_bar_lvl + 3, "120dB");
+    printf("\n|%-*.*s|\n0%*s\n", max_bar_lvl, bar_lvl, bars, max_bar_lvl + 3, "120dB");
 }
 
 void console_view::process(void)
 {
-    /* TODO: Implement console/serial port input command handling */
+    /* TODO: Implement a proper CLI shell  */
     if (this->char_received)
     {
         this->char_received = false;
 
-        printf("\e[u%c\e[s", this->received_char);
+        switch (this->received_char)
+        {
+            case 'w':
+            {
+                /* Weighting */
+                change_weighting_evt_t e;
+                e.weighting = utils::switch_weighting(this->current_data.weighting);
+                this->send_event_cb(e);
+                break;
+            }
+            case 'a':
+            {
+                /* Averaging */
+                change_averaging_evt_t e;
+                if (this->current_data.averaging == 'S')
+                    e.averaging = spl::averaging_t::fast;
+                else if (this->current_data.averaging == 'F')
+                    e.averaging = spl::averaging_t::slow;
+
+                this->send_event_cb(e);
+                break;
+            }
+            case 's':
+            {
+                /* Statistics (clear MIN/MAX) */
+                clear_max_spl_data_evt_t e1;
+                clear_max_spl_data_evt_t e2;
+                this->send_event_cb(e1);
+                this->send_event_cb(e2);
+                break;
+            }
+            case 'e':
+            {
+                printf(CLI_START "Error code: %d", this->current_data.error_code);
+                break;
+            }
+            default:
+                printf(CLI_START "Command '%c' not found", this->received_char);
+        }
     }
 }

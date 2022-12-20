@@ -39,6 +39,8 @@ namespace spl
 
         meter *model;
         std::vector<view_interface*> views;
+
+        int error_code;
     };
 }
 

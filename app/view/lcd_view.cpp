@@ -11,8 +11,7 @@
 #include <string>
 #include <utility>
 
-#include "app/controller/default_controller.hpp"
-#include "app/utils.hpp"
+#include <app/utils.hpp>
 
 using namespace spl;
 
@@ -27,23 +26,6 @@ namespace
         const uint8_t padding = value_int / 100 ? 0 : value_int / 10 ? 1 : 2;
         return std::string(padding, ' ') + std::to_string(value_int);
     }
-
-    spl::weighting_t switch_weighting(char current_weighting)
-    {
-        /* Loop through: A -> C -> Z */
-        switch (current_weighting)
-        {
-            case 'A':
-                return spl::weighting_t::c;
-            case 'C':
-                return spl::weighting_t::z;
-            case 'Z':
-                return spl::weighting_t::a;
-            default:
-                return spl::weighting_t::a;
-        }
-    }
-
 }
 
 void lcd_view::update_lcd(const data *data)
@@ -133,7 +115,7 @@ void lcd_view::process(void)
         if (this->current_view_mode == view_mode::spl)
         {
             change_weighting_evt_t e;
-            e.weighting = switch_weighting(this->current_data.weighting);
+            e.weighting = utils::switch_weighting(this->current_data.weighting);
             this->send_event_cb(e);
             return;
         }
