@@ -8,6 +8,7 @@
 #include "hal_system.hpp"
 
 #include <cassert>
+#include <cstdio>
 
 #include <hal/hal_usart.hpp>
 
@@ -54,6 +55,10 @@ void system::init(void)
 
     /* Set System Tick interrupt */
     SysTick_Config(system::system_clock / system::systick_freq);
+
+    /* Disable buffering of stdio */
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -77,15 +82,15 @@ extern "C" void _ttywrch(int ch)
     stdio.write(static_cast<std::byte>(ch));
 }
 
-extern "C" int putchar (int c)
-{
-    auto &stdio = usart::stdio::get_instance();
-    stdio.write(static_cast<std::byte>(c));
-    return c;
-}
-
-extern "C" int getchar(void)
-{
-    auto &stdio = usart::stdio::get_instance();
-    return static_cast<int>(stdio.read());
-}
+//extern "C" int putchar(int c)
+//{
+//    auto &stdio = usart::stdio::get_instance();
+//    stdio.write(static_cast<std::byte>(c));
+//    return c;
+//}
+//
+//extern "C" int getchar(void)
+//{
+//    auto &stdio = usart::stdio::get_instance();
+//    return static_cast<int>(stdio.read());
+//}

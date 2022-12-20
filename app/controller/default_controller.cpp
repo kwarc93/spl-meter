@@ -95,9 +95,9 @@ default_controller::default_controller(meter &model, std::vector<view_interface*
     views {views}
 {
     for (auto view : this->views)
-        view->set_event_sender_callback([this](const event_t &e) -> void { this->handle_event(e); });
+        view->set_event_sender_callback([this](const event_t &e) { this->handle_event(e); });
 
-    this->model->set_new_data_callback([this](const spl::data_t &data) -> void { this->model_new_data_callback(data); });
+    this->model->set_new_data_callback([this](const spl::data_t &data) { this->model_new_data_callback(data); });
     this->model->enable();
 }
 

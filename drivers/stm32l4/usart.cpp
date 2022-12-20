@@ -103,10 +103,11 @@ std::size_t usart::write(const std::byte *data, std::size_t size)
 
 void usart::read_async(std::byte *data, std::size_t size, const read_cb_t &callback)
 {
-    this->async_read_data_length = size;
-    this->async_read_data = data;
     this->async_read_counter = 0;
+    this->async_read_data = data;
+    this->async_read_data_length = size;
     this->async_read_callback = callback;
+
     this->hw.reg->CR1 |= USART_CR1_RXNEIE;
 
     IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */

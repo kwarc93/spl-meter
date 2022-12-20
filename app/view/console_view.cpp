@@ -39,27 +39,24 @@ void console_view::character_received_callback(const std::byte *data, std::size_
     if (bytes_read == 1)
         putchar(this->received_char);
 
-    auto &stdin_usart = hal::usart::stdio::get_instance();
+    this->read_character();
+}
 
-    stdin_usart.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
-                           [this](const std::byte *data, std::size_t bytes_read) -> void
-                           {
-                                this->character_received_callback(data, bytes_read);
-                           });
+void console_view::read_character(void)
+{
+    this->stdio_serial.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
+                                 [this](const std::byte *data, std::size_t bytes_read)
+                                 {
+                                      this->character_received_callback(data, bytes_read);
+                                 });
 }
 
 //-----------------------------------------------------------------------------
 /* public */
 
-console_view::console_view()
+console_view::console_view() : stdio_serial { hal::usart::stdio::get_instance() }
 {
-    auto &stdin_usart = hal::usart::stdio::get_instance();
-
-    stdin_usart.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
-                           [this](const std::byte *data, std::size_t bytes_read) -> void
-                           {
-                                this->character_received_callback(data, bytes_read);
-                           });
+    this->read_character();
 }
 
 console_view::~console_view()

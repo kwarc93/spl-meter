@@ -12,6 +12,8 @@
 
 #include <cstdint>
 
+#include <hal/hal_interface.hpp>
+
 namespace spl
 {
 
@@ -26,6 +28,8 @@ public:
 private:
     char received_char;
     void character_received_callback(const std::byte *data, std::size_t bytes_read);
+    void read_character(void);
+    hal::interface::serial &stdio_serial;
 };
 
 }
