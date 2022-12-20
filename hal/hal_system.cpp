@@ -82,15 +82,3 @@ extern "C" void _ttywrch(int ch)
     stdio.write(static_cast<std::byte>(ch));
 }
 
-//extern "C" int putchar(int c)
-//{
-//    auto &stdio = usart::stdio::get_instance();
-//    stdio.write(static_cast<std::byte>(c));
-//    return c;
-//}
-//
-//extern "C" int getchar(void)
-//{
-//    auto &stdio = usart::stdio::get_instance();
-//    return static_cast<int>(stdio.read());
-//}

@@ -26,9 +26,9 @@ public:
     void update(const data &data) override;
     void process(void) override;
 private:
+    bool char_received;
     char received_char;
     void character_received_callback(const std::byte *data, std::size_t bytes_read);
-    void read_character(void);
     hal::interface::serial &stdio_serial;
 };
 

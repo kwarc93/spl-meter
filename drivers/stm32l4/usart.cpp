@@ -40,9 +40,8 @@ static const std::map<usart::id, usart::usart_hw> usartx =
 
 usart::usart(id id, uint32_t baudrate) :
     hw (usartx.at(id)),
-    async_read_counter {0},
-    async_read_data_length {0},
-    async_read_data {nullptr}
+    async_read {0},
+    async_write {0}
 {
     rcc::toggle_periph_clock(this->hw.pbus, true);
 
@@ -101,17 +100,30 @@ std::size_t usart::write(const std::byte *data, std::size_t size)
     return bytes_written;
 }
 
-void usart::read_async(std::byte *data, std::size_t size, const read_cb_t &callback)
+void usart::read_async(std::byte *data, std::size_t size, const read_cb_t &callback, bool listen)
 {
-    this->async_read_counter = 0;
-    this->async_read_data = data;
-    this->async_read_data_length = size;
-    this->async_read_callback = callback;
+    if (size == 0 || data == nullptr)
+    {
+        this->async_read = {0};
+        this->hw.reg->CR1 &= ~USART_CR1_RXNEIE;
+
+        IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */
+        NVIC_DisableIRQ(nvic_irq);
+
+        return;
+    }
+
+    this->async_read.counter = 0;
+    this->async_read.data = data;
+    this->async_read.data_length = listen ? 1 : size; /* When listen==true, driver reads one by one forever */
+    this->async_read.callback = callback;
+    this->async_read.listen = listen;
 
     this->hw.reg->CR1 |= USART_CR1_RXNEIE;
 
     IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */
     NVIC_SetPriority(nvic_irq, NVIC_EncodePriority( NVIC_GetPriorityGrouping(), 15, 0 ));
+//    NVIC_ClearPendingIRQ(nvic_irq);
     NVIC_EnableIRQ(nvic_irq);
 }
 
@@ -122,21 +134,38 @@ void usart::write_async(const std::byte *data, std::size_t size, const write_cb_
 
 void usart::irq_handler(void)
 {
+    /* Overrun */
+    if (this->hw.reg->ISR & USART_ISR_ORE)
+    {
+        this->hw.reg->ICR |= USART_ICR_ORECF;
+
+        /* TODO: Throw overrun error */
+//        asm volatile ("BKPT");
+    }
+
+    /* RX not empty */
     if (this->hw.reg->ISR & USART_ISR_RXNE)
     {
-        if (this->async_read_counter < this->async_read_data_length)
+        /* Receive the data */
+        if (this->async_read.counter < this->async_read.data_length)
         {
-            *(this->async_read_data + this->async_read_counter) = static_cast<std::byte>(this->hw.reg->RDR);
-            this->async_read_counter++;
+            *(this->async_read.data + this->async_read.counter) = static_cast<std::byte>(this->hw.reg->RDR);
+            this->async_read.counter++;
         }
 
-        if (this->async_read_counter == this->async_read_data_length)
+        /* Finish reception & call callback */
+        if (this->async_read.counter == this->async_read.data_length)
         {
-            this->hw.reg->CR1 &= ~USART_CR1_RXNEIE;
-            IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */
-            NVIC_DisableIRQ(nvic_irq);
+            if (!this->async_read.listen)
+            {
+                this->hw.reg->CR1 &= ~USART_CR1_RXNEIE;
+                IRQn_Type nvic_irq = static_cast<IRQn_Type>(USART1_IRQn + static_cast<uint8_t>(this->hw.id)); /* TODO: Only supported 1, 2 & 3 */
+                NVIC_DisableIRQ(nvic_irq);
+            }
 
-            this->async_read_callback(this->async_read_data, this->async_read_counter);
+            this->async_read.callback(this->async_read.data, this->async_read.counter);
+            this->async_read.counter = 0;
         }
+
     }
 }
