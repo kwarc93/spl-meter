@@ -118,7 +118,7 @@ void console_view::process(void)
             {
                 /* Statistics (clear MIN/MAX) */
                 clear_max_spl_data_evt_t e1;
-                clear_max_spl_data_evt_t e2;
+                clear_min_spl_data_evt_t e2;
                 this->send_event_cb(e1);
                 this->send_event_cb(e2);
                 break;

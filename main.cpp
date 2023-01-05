@@ -45,5 +45,7 @@ int main(void)
             led_blink_start = hal::system::clock::now();
             led.set(led_state ^= true);
         }
+
+        __WFI();
     }
 }

@@ -25,7 +25,6 @@ extern "C" void DMA1_Channel4_IRQHandler(void)
 
 extern "C" void USART2_IRQHandler(void)
 {
-    constexpr uint8_t id = static_cast<uint8_t>(drivers::usart::id::usart2);
-    drivers::usart::active_objects[id]->irq_handler();
+    drivers::usart::instance[static_cast<uint8_t>(drivers::usart::id::usart2)]->irq_handler();
 }
 

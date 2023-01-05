@@ -37,7 +37,7 @@ public:
 
     void irq_handler(void);
 
-    static std::array<usart*, 3> active_objects; /* For IRQ handling, must correspond to the enum class usart::id */
+    static inline std::array<usart*, 3> instance; /* Used for global access (e.g. from interrupt) */
     struct usart_hw;
 private:
     const usart_hw &hw;

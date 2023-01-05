@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <functional>
+#include <memory>
 
 #include <hal/hal_system.hpp>
 #include <hal/hal_microphone.hpp>
@@ -49,8 +50,8 @@ private:
     std::vector<int16_t> mic_data_buffer;
     void mic_data_ready(const int16_t *data, uint16_t data_len);
 
-    spl::weighting_filter *weighting_filter;
-    spl::averaging_filter *averaging_filter;
+    std::unique_ptr<spl::weighting_filter> weighting_filter;
+    std::unique_ptr<spl::averaging_filter> averaging_filter;
     hal::system::clock::time_point averaging_time_point;
 
     std::vector<float32_t> dsp_buffer;
