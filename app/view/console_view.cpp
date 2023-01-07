@@ -44,7 +44,7 @@ void console_view::character_received_callback(const std::byte *data, std::size_
         return;
 
     while (bytes_read--)
-    	this->char_queue.push(static_cast<char>(*(data++)));
+        this->char_queue.push(static_cast<char>(*(data++)));
 }
 
 //-----------------------------------------------------------------------------
@@ -92,9 +92,9 @@ void console_view::process(void)
     /* TODO: Implement a proper CLI shell  */
     while (!this->char_queue.empty())
     {
-    	char c;
-    	if (!this->char_queue.pop(c))
-    		continue;
+        char c;
+        if (!this->char_queue.pop(c))
+            continue;
 
         switch (c)
         {
@@ -129,7 +129,7 @@ void console_view::process(void)
             }
             case 'e':
             {
-                printf(CLI_START "Error code: %d", this->current_data.error_code);
+                printf(CLI_START "Error code: %d        ", this->current_data.error_code);
                 break;
             }
             default:
