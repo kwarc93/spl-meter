@@ -40,8 +40,11 @@ void console_view::character_received_callback(const std::byte *data, std::size_
 {
     /* WARNING: This is called from interrupt */
 
-    if (bytes_read == 1)
-        this->char_received = true;
+    if (bytes_read == 0)
+        return;
+
+    while (bytes_read--)
+    	this->char_queue.push(static_cast<char>(*(data++)));
 }
 
 //-----------------------------------------------------------------------------
@@ -53,7 +56,6 @@ console_view::console_view() : stdio_serial { hal::usart::stdio::get_instance() 
     printf("\e[2J");
 
     /* Start listening for character */
-    this->char_received = false;
     this->stdio_serial.read_async(reinterpret_cast<std::byte*>(&this->received_char), 1,
                                  [this](const std::byte *data, std::size_t bytes_read)
                                  {
@@ -88,11 +90,13 @@ void console_view::update(const data &data)
 void console_view::process(void)
 {
     /* TODO: Implement a proper CLI shell  */
-    if (this->char_received)
+    while (!this->char_queue.empty())
     {
-        this->char_received = false;
+    	char c;
+    	if (!this->char_queue.pop(c))
+    		continue;
 
-        switch (this->received_char)
+        switch (c)
         {
             case 'w':
             {
@@ -129,7 +133,7 @@ void console_view::process(void)
                 break;
             }
             default:
-                printf(CLI_START "Command '%c' not found", this->received_char);
+                printf(CLI_START "Command '%c' not found", c);
         }
     }
 }

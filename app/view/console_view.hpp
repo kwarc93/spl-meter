@@ -14,6 +14,8 @@
 
 #include <hal/hal_interface.hpp>
 
+#include "libs/spsc_queue.hpp"
+
 namespace spl
 {
 
@@ -26,9 +28,10 @@ public:
     void update(const data &data) override;
     void process(void) override;
 private:
-    bool char_received;
-    char received_char;
     void character_received_callback(const std::byte *data, std::size_t bytes_read);
+
+    char received_char;
+    spsc_queue<char, 16> char_queue;
     hal::interface::serial &stdio_serial;
 };
 
