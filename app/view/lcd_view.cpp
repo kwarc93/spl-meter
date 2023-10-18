@@ -70,12 +70,6 @@ void lcd_view::update_view_mode(view_mode view)
     this->update_lcd(nullptr);
 }
 
-void lcd_view::send_event(const event_t &e)
-{
-    if (this->send_event_cb)
-        this->send_event_cb(e);
-}
-
 //-----------------------------------------------------------------------------
 /* public */
 
@@ -116,7 +110,7 @@ void lcd_view::process(void)
         {
             change_weighting_evt_t e;
             e.weighting = utils::switch_weighting(this->current_data.weighting);
-            this->send_event_cb(e);
+            this->notify(e);
             return;
         }
 
@@ -126,14 +120,14 @@ void lcd_view::process(void)
     if (this->up_btn.was_pressed())
     {
         clear_max_spl_data_evt_t e;
-        this->send_event_cb(e);
+        this->notify(e);
         this->update_view_mode(view_mode::max);
     }
 
     if (this->down_btn.was_pressed())
     {
         clear_min_spl_data_evt_t e;
-        this->send_event_cb(e);
+        this->notify(e);
         this->update_view_mode(view_mode::min);
     }
 
@@ -143,7 +137,7 @@ void lcd_view::process(void)
         {
             change_averaging_evt_t e;
             e.averaging = spl::averaging_t::slow;
-            this->send_event_cb(e);
+            this->notify(e);
         }
     }
 
@@ -153,7 +147,7 @@ void lcd_view::process(void)
         {
             change_averaging_evt_t e;
             e.averaging = spl::averaging_t::fast;
-            this->send_event_cb(e);
+            this->notify(e);
         }
     }
 }

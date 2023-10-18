@@ -9,13 +9,11 @@
 #define VIEW_VIEW_INTERFACE_HPP_
 
 #include <app/controller/events.hpp>
+#include <middlewares/observer.hpp>
 
 namespace spl
 {
-    /* Forward declaration */
-    class default_controller;
-
-    class view_interface
+    class view_interface : public middlewares::subject<event_t>
     {
     public:
         virtual ~view_interface() {};
@@ -33,10 +31,8 @@ namespace spl
         virtual void update(const data &data) = 0;
         virtual void process(void) = 0;
 
-        void set_event_sender_callback(const event_cb_t &cb) { this->send_event_cb = cb; };
     protected:
         data current_data;
-        event_cb_t send_event_cb;
     };
 }
 

@@ -103,7 +103,7 @@ void console_view::process(void)
                 /* Weighting */
                 change_weighting_evt_t e;
                 e.weighting = utils::switch_weighting(this->current_data.weighting);
-                this->send_event_cb(e);
+                this->notify(e);
                 break;
             }
             case 'a':
@@ -115,7 +115,7 @@ void console_view::process(void)
                 else if (this->current_data.averaging == 'F')
                     e.averaging = spl::averaging_t::slow;
 
-                this->send_event_cb(e);
+                this->notify(e);
                 break;
             }
             case 's':
@@ -123,8 +123,8 @@ void console_view::process(void)
                 /* Statistics (clear MIN/MAX) */
                 clear_max_spl_data_evt_t e1;
                 clear_min_spl_data_evt_t e2;
-                this->send_event_cb(e1);
-                this->send_event_cb(e2);
+                this->notify(e1);
+                this->notify(e2);
                 break;
             }
             case 'e':

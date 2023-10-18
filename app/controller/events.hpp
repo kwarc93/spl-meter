@@ -36,12 +36,13 @@ struct clear_max_spl_data_evt_t
 
 };
 
-using event_t = std::variant<change_averaging_evt_t,
-                             change_weighting_evt_t,
-                             clear_min_spl_data_evt_t,
-                             clear_max_spl_data_evt_t>;
-
-typedef std::function<void(const event_t &e)> event_cb_t;
+using event_t = std::variant
+<
+    change_averaging_evt_t,
+    change_weighting_evt_t,
+    clear_min_spl_data_evt_t,
+    clear_max_spl_data_evt_t
+>;
 
 }
 

@@ -13,6 +13,8 @@
 #include <app/model/data_types.hpp>
 #include <app/view/view_interface.hpp>
 
+#include <middlewares/observer.hpp>
+
 #include "events.hpp"
 
 namespace spl
@@ -20,15 +22,16 @@ namespace spl
     /* Forward declaration */
     class meter;
 
-    class default_controller
+    class default_controller : public middlewares::observer<event_t>
     {
     public:
         default_controller(meter &model, std::vector<view_interface*> &views);
         ~default_controller();
 
         void process(void);
-        void handle_event(const event_t &e);
     private:
+        void update(const event_t &data) override;
+
         /* Event handlers */
         void event_handler(const change_averaging_evt_t &e);
         void event_handler(const change_weighting_evt_t &e);
