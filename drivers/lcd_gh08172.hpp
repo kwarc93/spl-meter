@@ -8,6 +8,7 @@
 #ifndef LCD_GH08172_HPP_
 #define LCD_GH08172_HPP_
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
