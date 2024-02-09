@@ -11,7 +11,7 @@ using namespace spl;
 
 a_weighting::a_weighting()
 {
-    arm_biquad_cascade_df1_init_f32(&this->iir_filter, this->iir_stages, this->coeffs, this->iir_state);
+    arm_biquad_cascade_df2T_init_f32(&this->iir_filter, this->iir_stages, this->coeffs, this->iir_state);
 }
 
 bool a_weighting::process(std::vector<float32_t> &input, std::vector<float32_t> &output)
@@ -19,13 +19,13 @@ bool a_weighting::process(std::vector<float32_t> &input, std::vector<float32_t> 
     if (input.size() != output.size())
         return false;
 
-    arm_biquad_cascade_df1_f32(&this->iir_filter, input.data(), output.data(), output.size());
+    arm_biquad_cascade_df2T_f32(&this->iir_filter, input.data(), output.data(), output.size());
     return true;
 }
 
 c_weighting::c_weighting()
 {
-    arm_biquad_cascade_df1_init_f32(&this->iir_filter, this->iir_stages, this->coeffs, this->iir_state);
+    arm_biquad_cascade_df2T_init_f32(&this->iir_filter, this->iir_stages, this->coeffs, this->iir_state);
 }
 
 bool c_weighting::process(std::vector<float32_t> &input, std::vector<float32_t> &output)
@@ -33,7 +33,7 @@ bool c_weighting::process(std::vector<float32_t> &input, std::vector<float32_t> 
     if (input.size() != output.size())
         return false;
 
-    arm_biquad_cascade_df1_f32(&this->iir_filter, input.data(), output.data(), output.size());
+    arm_biquad_cascade_df2T_f32(&this->iir_filter, input.data(), output.data(), output.size());
     return true;
 }
 

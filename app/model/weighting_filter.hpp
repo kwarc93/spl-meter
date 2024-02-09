@@ -33,12 +33,15 @@ public:
     a_weighting();
     bool process(std::vector<float32_t> &input, std::vector<float32_t> &output);
 private:
-    arm_biquad_casd_df1_inst_f32 iir_filter;
+    arm_biquad_cascade_df2T_instance_f32 iir_filter;
     static constexpr uint32_t iir_stages = 3;
-    static constexpr float32_t coeffs[5 * iir_stages] = {2.8148e-01, -5.6291e-01, 2.8144e-01, 4.3181e-02, -4.6615e-04,
-                                                         1.0000e+00, -2.0001e+00, 1.0001e+00, 1.9935e+00, -9.9355e-01,
-                                                         1.0000e+00,  2.0000e+00, 1.0000e+00, 1.8737e+00, -8.7551e-01};
-    float32_t iir_state[4 * iir_stages];
+    static constexpr float32_t coeffs[5 * iir_stages] =
+    {
+        0.28147504346,  -0.56291022628,   0.28143518563,   0.04318103380,  -0.00046615042,
+        1.00000000000,  -2.00014161345,   1.00014162348,   1.99353908705,  -0.99354952290,
+        1.00000000000,   2.00000000000,   1.00000000000,   1.87367745134,  -0.87551448640
+    };
+    float32_t iir_state[2 * iir_stages];
 };
 
 class c_weighting : public weighting_filter
@@ -47,11 +50,14 @@ public:
     c_weighting();
     bool process(std::vector<float32_t> &input, std::vector<float32_t> &output);
 private:
-    arm_biquad_casd_df1_inst_f32 iir_filter;
+    arm_biquad_cascade_df2T_instance_f32 iir_filter;
     static constexpr uint32_t iir_stages = 2;
-    static constexpr float32_t coeffs[5 * iir_stages] = {2.4025e-01,  4.8051e-01, 2.4025e-01, 4.3181e-02, -4.6615e-04,
-                                                         1.0000e+00, -2.0000e+00, 1.0000e+00, 1.9935e+00, -9.9355e-01};
-    float32_t iir_state[4 * iir_stages];
+    static constexpr float32_t coeffs[5 * iir_stages] =
+    {
+        0.24025487669,   0.48050975338,   0.24025487669,   0.04318103380,  -0.00046615042,
+        1.00000000000,  -2.00000000000,   1.00000000000,   1.99353908697,  -0.99354952282
+    };
+    float32_t iir_state[2 * iir_stages];
 };
 
 class z_weighting : public weighting_filter
