@@ -35,11 +35,11 @@ public:
 private:
     arm_biquad_cascade_df2T_instance_f32 iir_filter;
     static constexpr uint32_t iir_stages = 3;
-    static constexpr float32_t coeffs[5 * iir_stages] =
+    static constexpr float32_t coeffs[5 * iir_stages] = // Fs: 46875 Hz
     {
-        0.28147504346,  -0.56291022628,   0.28143518563,   0.04318103380,  -0.00046615042,
-        1.00000000000,  -2.00014161345,   1.00014162348,   1.99353908705,  -0.99354952290,
-        1.00000000000,   2.00000000000,   1.00000000000,   1.87367745134,  -0.87551448640
+        0.240209840,  -0.480385663,   0.240175825,   0.201110797,  -0.010111388,
+        1.000000000,  -2.000141613,   1.000141623,   1.891429991,  -0.892780174,
+        1.000000000,   2.000000000,   1.000000000,   1.994485381,  -0.994492984
     };
     float32_t iir_state[2 * iir_stages];
 };
@@ -52,10 +52,10 @@ public:
 private:
     arm_biquad_cascade_df2T_instance_f32 iir_filter;
     static constexpr uint32_t iir_stages = 2;
-    static constexpr float32_t coeffs[5 * iir_stages] =
+    static constexpr float32_t coeffs[5 * iir_stages] = // Fs: 46875 Hz
     {
-        0.24025487669,   0.48050975338,   0.24025487669,   0.04318103380,  -0.00046615042,
-        1.00000000000,  -2.00000000000,   1.00000000000,   1.99353908697,  -0.99354952282
+        0.203135364,   0.406270729,   0.203135364,   0.201110797,  -0.010111388,
+        1.000000000,  -2.000000000,   1.000000000,   1.994485381,  -0.994492984
     };
     float32_t iir_state[2 * iir_stages];
 };

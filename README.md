@@ -9,7 +9,7 @@ Sound pressure meter running on STM32L476-DISCOVERY board
 - A, C and Z frequency weighting according to IEC 61672-1:2013
 - Fast and Slow time weightings according to IEC 61672-1:2013
 - Frequency range: 20Hz - 20kHz
-- SPL range: 37 - 120dB
+- SPL range: 33 - 120dB
 - MAX/MIN display
 
 ## Overview

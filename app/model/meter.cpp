@@ -88,17 +88,17 @@ void meter::process(void)
 
     current_dsp_buffer = this->aux_dsp_buffer;
 
-    /* Delete offset */
-    float32_t mean;
-    arm_mean_f32(current_dsp_buffer.data(), current_dsp_buffer.size(), &mean);
-    arm_offset_f32(current_dsp_buffer.data(), -mean, current_dsp_buffer.data(), current_dsp_buffer.size());
-
     /* Calculate RMS value */
     float32_t rms;
     arm_rms_f32(current_dsp_buffer.data(), current_dsp_buffer.size(), &rms);
 
+    /* Delete offset */
+    float32_t mean;
+    arm_mean_f32(current_dsp_buffer.data(), current_dsp_buffer.size(), &mean);
+    rms -= mean;
+
     /* Normalize RMS value */
-    rms /= INT16_MAX;
+    rms /= -INT16_MIN;
 
     /* Calculate dB SPL */
     float32_t db_spl_raw = 94 - this->mic.get_sensitivity() + 20.0f * log10f(rms);

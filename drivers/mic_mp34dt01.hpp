@@ -30,6 +30,7 @@ namespace drivers
         static constexpr uint32_t aop = 120;            /* 120dB SPL */
         static constexpr uint32_t snr = 61;             /* 61dB */
         static constexpr int32_t sensitivity = -26;     /* -26dbFS */
+        static constexpr uint32_t clock = 3000000;      /* 3MHz */
 
         const drivers::dfsdm::channel::id channel;
         drivers::dfsdm::filter::id filter;

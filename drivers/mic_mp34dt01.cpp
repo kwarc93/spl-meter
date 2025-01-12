@@ -22,7 +22,7 @@ mic_mp34dt01::mic_mp34dt01(dfsdm::channel::id ch, dfsdm::filter::id f) : channel
 
 void mic_mp34dt01::init(std::vector<int16_t> &data_buffer, const hal::interface::microphone::data_ready_cb_t &data_ready_cb)
 {
-    /* Digital microphone on channel 2, fclk=2.4MHz, fs=40kHz, 16bit */
+    /* Digital microphone on channel 2, fclk=3MHz, fs=46.875kHz, 16bit */
 
     dfsdm::enable(true);
     dfsdm::channel::enable(this->channel, false);
@@ -36,21 +36,21 @@ void mic_mp34dt01::init(std::vector<int16_t> &data_buffer, const hal::interface:
                               dfsdm::channel::clk_src::int_ckout,
                               dfsdm::channel::protocol::spi_r_edge);
 
-    const uint16_t filter_decim = 60;
+    const uint16_t filter_decim = 64;
     const uint8_t integrator_avg = 1;
 
     dfsdm::filter::configure(this->filter, dfsdm::filter::order::sinc4, filter_decim, integrator_avg);
     dfsdm::filter::link_channel(this->filter, this->channel);
     dfsdm::filter::enable_dma(this->filter, data_buffer.data(), data_buffer.size() , data_ready_cb);
 
-    uint32_t clk = dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, 2400000, true);
+    uint32_t clk = dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, clock, true);
 
     this->sampling_frequency = clk / (filter_decim * integrator_avg);
 }
 
 void mic_mp34dt01::enable(void)
 {
-    dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, 2400000, true);
+    dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, clock, true);
 
     dfsdm::channel::enable(this->channel, true);
     dfsdm::filter::enable(this->filter, true);
@@ -62,7 +62,7 @@ void mic_mp34dt01::disable(void)
     dfsdm::channel::enable(this->channel, false);
     dfsdm::filter::enable(this->filter, false);
 
-    dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, 2400000, false);
+    dfsdm::configure_clock_output(dfsdm::clk_out_src::apb2, clock, false);
 }
 
 

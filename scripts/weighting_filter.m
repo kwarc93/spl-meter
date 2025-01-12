@@ -4,7 +4,7 @@
 clear all
 close all
 
-Fs = 40000;
+Fs = 46875;
 T = 1/Fs;
 
 % Definition of analog A-weighting filter according to IEC/CD 1672.

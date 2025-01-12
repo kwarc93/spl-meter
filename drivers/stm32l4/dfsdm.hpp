@@ -62,7 +62,7 @@ public:
 
         static void enable(id ch, bool state);
         static void configure(id ch, data_pack dp, data_input di, clk_src clk, protocol proto);
-        static void set_offset(id ch, uint32_t offset);
+        static void set_offset(id ch, int32_t offset);
         static void set_bitshift(id ch, uint8_t right_shift);
     } channel;
 

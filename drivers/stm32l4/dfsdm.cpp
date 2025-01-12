@@ -161,18 +161,18 @@ void dfsdm::channel::configure(id ch, data_pack dp, data_input di, clk_src clk, 
     channel->CHCFGR1 |= static_cast<uint32_t>(proto) << DFSDM_CHCFGR1_SITP_Pos;
 }
 
-void dfsdm::channel::set_offset(id ch, uint32_t offset)
+void dfsdm::channel::set_offset(id ch, int32_t offset)
 {
     auto channel = get_channel_reg(ch);
     channel->CHCFGR2 &= DFSDM_CHCFGR2_OFFSET_Msk;
-    channel->CHCFGR2 |= (offset & DFSDM_CHCFGR2_OFFSET_Msk) << DFSDM_CHCFGR2_OFFSET_Pos;
+    channel->CHCFGR2 |= static_cast<uint32_t>(offset) << DFSDM_CHCFGR2_OFFSET_Pos;
 }
 
 void dfsdm::channel::set_bitshift(id ch, uint8_t right_shift)
 {
     auto channel = get_channel_reg(ch);
     channel->CHCFGR2 &= DFSDM_CHCFGR2_DTRBS_Msk;
-    channel->CHCFGR2 |= (right_shift & DFSDM_CHCFGR2_DTRBS_Msk) << DFSDM_CHCFGR2_DTRBS_Pos;
+    channel->CHCFGR2 |= ((right_shift) << DFSDM_CHCFGR2_DTRBS_Pos) & DFSDM_CHCFGR2_DTRBS_Msk;
 }
 
 void dfsdm::channel::enable(id ch, bool state)
